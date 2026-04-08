@@ -1,14 +1,17 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef, useState } from 'react'
-import { ExternalLink, Github, BarChart3, ShoppingCart, Database, ArrowUpRight, FileText } from 'lucide-react'
+import { ExternalLink, Github, BarChart3, ShoppingCart, Database, ArrowUpRight, FileText, Gamepad2, Code2, BookOpen, Warehouse, Package, CalendarClock } from 'lucide-react'
 import { projects } from '../data/portfolio'
 
-const projectIcons = [FileText, BarChart3, ShoppingCart, Database]
+const projectIcons = [FileText, Gamepad2, Code2, BookOpen, Warehouse, Package, CalendarClock]
 const projectGradients = [
   'from-amber-500/20 via-orange-500/10 to-transparent',
+  'from-red-500/20 via-rose-500/10 to-transparent',
   'from-cyan-500/20 via-blue-500/10 to-transparent',
   'from-violet-500/20 via-purple-500/10 to-transparent',
   'from-emerald-500/20 via-teal-500/10 to-transparent',
+  'from-sky-500/20 via-indigo-500/10 to-transparent',
+  'from-yellow-500/20 via-lime-500/10 to-transparent',
 ]
 
 function ProjectCard({ project, index }) {
