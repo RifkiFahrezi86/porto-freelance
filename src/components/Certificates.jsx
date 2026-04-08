@@ -1,7 +1,15 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { Award, ExternalLink } from 'lucide-react'
+import { Award, ExternalLink, ShieldCheck, Calendar } from 'lucide-react'
 import { certificates } from '../data/portfolio'
+
+const certIcons = ['🏆', '🌐', '⚛️', '🗄️']
+const certAccents = [
+  'from-cyan-400 to-blue-500',
+  'from-emerald-400 to-teal-500',
+  'from-yellow-400 to-orange-500',
+  'from-violet-400 to-purple-500',
+]
 
 function CertCard({ cert, index }) {
   const ref = useRef(null)
@@ -13,29 +21,49 @@ function CertCard({ cert, index }) {
       initial={{ opacity: 0, y: 40 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="group bg-surface/60 backdrop-blur border border-white/5 rounded-xl overflow-hidden hover:border-primary/30 transition-all"
+      className="group glass-card rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2"
     >
-      {/* Image placeholder */}
-      <div className="relative h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-t from-dark/60 to-transparent" />
-        <Award size={48} className="text-primary/40" />
-        <div className="absolute bottom-3 left-3 right-3">
-          <span className="text-xs bg-primary/20 text-primary-light px-2 py-1 rounded-full backdrop-blur">
-            {cert.issuer}
-          </span>
-        </div>
-      </div>
+      {/* Top accent bar */}
+      <div className={`h-1 bg-gradient-to-r ${certAccents[index] || certAccents[0]}`} />
 
       {/* Content */}
-      <div className="p-5">
-        <h3 className="font-bold text-white mb-2 group-hover:text-primary transition-colors">
+      <div className="p-6">
+        {/* Icon & badge */}
+        <div className="flex items-start justify-between mb-4">
+          <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${certAccents[index] || certAccents[0]} bg-opacity-10 flex items-center justify-center text-2xl`}>
+            {certIcons[index] || '📜'}
+          </div>
+          {cert.credential && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-400 bg-green-400/10 border border-green-400/20 px-2.5 py-1 rounded-full uppercase tracking-wider">
+              <ShieldCheck size={10} />
+              {cert.credential}
+            </span>
+          )}
+        </div>
+
+        <h3 className="font-bold text-white text-base mb-1.5 group-hover:text-primary transition-colors">
           {cert.title}
         </h3>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-slate-400">{cert.date}</span>
-          <button className="text-xs text-primary hover:text-primary-light flex items-center gap-1 bg-transparent border-none cursor-pointer">
-            View Certificate <ExternalLink size={12} />
-          </button>
+
+        <p className="text-sm text-primary-light/80 font-medium mb-3">
+          {cert.issuer}
+        </p>
+
+        <div className="flex items-center justify-between pt-3 border-t border-white/5">
+          <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
+            <Calendar size={12} />
+            {cert.date}
+          </span>
+          {cert.image && (
+            <a
+              href={cert.image}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-primary hover:text-primary-light flex items-center gap-1 transition-colors no-underline"
+            >
+              View <ExternalLink size={11} />
+            </a>
+          )}
         </div>
       </div>
     </motion.div>
@@ -44,15 +72,28 @@ function CertCard({ cert, index }) {
 
 export default function Certificates() {
   return (
-    <section id="certificates" className="py-24 px-6 bg-dark-2/30">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
-            Awards & Certificates
-          </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            Professional certifications that validate my expertise and knowledge in various technologies.
-          </p>
+    <section id="certificates" className="py-28 px-6 relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-dark via-dark-2/50 to-dark" />
+
+      <div className="max-w-6xl mx-auto relative z-10">
+        <div className="text-center mb-20">
+          <motion.span
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-sm text-primary font-semibold tracking-widest uppercase mb-3 block"
+          >
+            Credentials
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl md:text-5xl font-black text-white mb-4"
+          >
+            Awards & <span className="gradient-text">Certificates</span>
+          </motion.h2>
+          <div className="section-line mt-6" />
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">

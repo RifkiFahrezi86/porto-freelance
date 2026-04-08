@@ -11,7 +11,7 @@ export const profile = {
   social: {
     github: "https://github.com/RifkiFahrezi86",
     linkedin: "#",
-    instagram: "#",
+    instagram: "https://www.instagram.com/rifki_ahmadfahrezi/",
     discord: "#",
   },
 };
@@ -23,6 +23,13 @@ export const experiences = [
     company: "Freelance",
     description:
       "Membangun berbagai aplikasi web untuk klien meliputi dashboard system, platform e-commerce, dan sistem manajemen data menggunakan React.js, Next.js, Node.js, dan MongoDB.",
+  },
+  {
+    role: "Fullstack Web Developer",
+    period: "2025 - 2026",
+    company: "Project - E-Office Dinas Pendidikan",
+    description:
+      "Mengembangkan sistem arsip surat digital (E-Office) untuk Dinas Pendidikan Kab. Bandung Barat menggunakan Laravel 12, MySQL, dengan fitur manajemen surat, disposisi, pemberkasan, dan dashboard analytics.",
   },
   {
     role: "Fullstack Web Developer",
@@ -50,16 +57,18 @@ export const experiences = [
 export const techStack = [
   { name: "React.js", level: "Mahir" },
   { name: "Next.js", level: "Mahir" },
+  { name: "Laravel", level: "Mahir" },
   { name: "Node.js", level: "Mahir" },
   { name: "Express.js", level: "Mahir" },
   { name: "MongoDB", level: "Mahir" },
+  { name: "MySQL", level: "Mahir" },
   { name: "Tailwind CSS", level: "Mahir" },
   { name: "JavaScript", level: "Mahir" },
+  { name: "PHP", level: "Mahir" },
   { name: "REST API", level: "Mahir" },
   { name: "HTML5", level: "Mahir" },
   { name: "CSS3", level: "Mahir" },
   { name: "Git", level: "Mahir" },
-  { name: "MySQL", level: "Menengah" },
 ];
 
 export const certificates = [
@@ -67,35 +76,58 @@ export const certificates = [
     title: "Next.js Dashboard App",
     issuer: "Vercel / Next.js Official Course",
     date: "2024",
-    image: "/certificates/nextjs-cert.png",
+    image: "/certificates/nextjs-dashboard.pdf",
+    credential: "Verified",
   },
   {
-    title: "Web Development",
+    title: "Web Development Bootcamp",
     issuer: "Online Bootcamp",
     date: "2024",
-    image: "/certificates/web-dev.png",
+    image: null,
+    credential: "Completed",
   },
   {
-    title: "JavaScript & React",
-    issuer: "Online Course",
+    title: "JavaScript & React Development",
+    issuer: "Online Course Platform",
     date: "2024",
-    image: "/certificates/js-react.png",
+    image: null,
+    credential: "Completed",
   },
   {
-    title: "Database Management",
-    issuer: "Perkuliahan",
+    title: "Database Management System",
+    issuer: "Universitas - Mata Kuliah",
     date: "2023",
-    image: "/certificates/database.png",
+    image: null,
+    credential: "Lulus",
   },
 ];
 
 export const projects = [
+  {
+    title: "E-Office — Sistem Arsip Surat Digital",
+    description:
+      "Aplikasi manajemen surat dan arsip digital untuk Dinas Pendidikan Kab. Bandung Barat. Mendukung pengelolaan surat masuk/keluar, disposisi, agenda kegiatan, pemberkasan, dan download arsip.",
+    tech: ["Laravel 12", "MySQL", "Bootstrap", "Chart.js", "FPDF"],
+    image: "/projects/eoffice.png",
+    github: "https://github.com/RifkiFahrezi86",
+    demo: "https://e-office-arsip-surat.vercel.app/",
+    features: [
+      "Dashboard Analytics",
+      "Surat Masuk/Keluar",
+      "Disposisi Surat",
+      "Pemberkasan",
+      "5 Level Role",
+      "Export PDF/Excel",
+    ],
+  },
   {
     title: "Dashboard Persediaan Barang",
     description:
       "Sistem dashboard untuk manajemen inventori/persediaan barang dengan fitur CRUD, laporan stok, dan monitoring real-time.",
     tech: ["Next.js", "Node.js", "MongoDB", "REST API"],
     image: "/projects/dashboard.png",
+    github: "https://github.com/RifkiFahrezi86",
+    demo: null,
     features: [
       "Login/Auth",
       "CRUD Barang",
@@ -110,6 +142,8 @@ export const projects = [
       "Platform e-commerce untuk penjualan produk digital seperti template, source code, dan desain.",
     tech: ["React.js", "Node.js", "MongoDB", "REST API"],
     image: "/projects/ecommerce.png",
+    github: "https://github.com/RifkiFahrezi86",
+    demo: null,
     features: [
       "Katalog Produk",
       "Checkout",
@@ -123,6 +157,8 @@ export const projects = [
       "Aplikasi web untuk mengelola dan mengorganisir data secara terstruktur dengan fitur pencarian dan filtering.",
     tech: ["Next.js", "MongoDB", "REST API"],
     image: "/projects/management.png",
+    github: "https://github.com/RifkiFahrezi86",
+    demo: null,
     features: [
       "CRUD Data",
       "Pencarian & Filter",
