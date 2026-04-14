@@ -4,11 +4,8 @@ import { Menu, X } from 'lucide-react'
 
 const navLinks = [
   { label: 'Home', href: '#home' },
-  { label: 'Layanan', href: '#services' },
   { label: 'Portfolio', href: '#portfolio' },
-  { label: 'Testimoni', href: '#testimoni' },
-  { label: 'Harga', href: '#pricing' },
-  { label: 'FAQ', href: '#faq' },
+  { label: 'Experience', href: '#experience' },
   { label: 'Kontak', href: '#contact' },
 ]
 
@@ -61,7 +58,7 @@ export default function Navbar() {
             href="#contact"
             className="ml-3 text-sm bg-gradient-to-r from-primary to-accent text-white px-5 py-2.5 rounded-lg font-semibold transition-all no-underline hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 animate-pulse-glow"
           >
-            Order Sekarang
+            Hubungi Saya
           </a>
         </div>
 
@@ -99,7 +96,7 @@ export default function Navbar() {
                 onClick={() => setMobileOpen(false)}
                 className="mt-2 text-center bg-gradient-to-r from-primary to-accent text-white px-5 py-3 rounded-lg font-semibold no-underline"
               >
-                Order Sekarang
+                Hubungi Saya
               </a>
             </div>
           </motion.div>

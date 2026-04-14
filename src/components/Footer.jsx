@@ -1,13 +1,13 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
-import { Mail, MapPin, Phone, Github, Instagram, Send, ArrowUp, MessageCircle, Clock } from 'lucide-react'
+import { Mail, MapPin, Phone, Github, Instagram, Send, ArrowUp, MessageCircle } from 'lucide-react'
 import { profile } from '../data/portfolio'
 
 export default function Footer() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
 
-  const whatsappUrl = `https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Rifki, saya ingin konsultasi tentang project. Bisa dibantu?')}`
+  const whatsappUrl = `https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Rifki, saya tertarik untuk berdiskusi tentang project. Bisa ngobrol?')}`
 
   return (
     <>
@@ -63,26 +63,14 @@ export default function Footer() {
               ))}
             </div>
 
-            {/* Response time info */}
-            <div className="flex flex-wrap items-center justify-center gap-6 mb-12 text-sm text-slate-400">
-              <span className="flex items-center gap-2">
-                <Clock size={14} className="text-primary" />
-                {profile.operationalHours}
-              </span>
-              <span className="flex items-center gap-2">
-                <MessageCircle size={14} className="text-primary" />
-                Response time: {profile.responseTime}
-              </span>
-            </div>
-
             {/* CTA */}
             <div className="text-center glass-card rounded-2xl p-10 relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
               <h3 className="text-2xl font-bold text-white mb-2">
-                Ada pertanyaan atau ingin order?
+                Tertarik berkolaborasi?
               </h3>
               <p className="text-slate-400 mb-8 text-sm">
-                Konsultasi gratis untuk estimasi harga dan timeline project Anda.
+                Hubungi saya untuk diskusi project atau peluang kerja sama.
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <a
@@ -117,7 +105,7 @@ export default function Footer() {
                 Rifki<span className="gradient-text">.dev</span>
               </a>
               <p className="text-sm text-slate-400 mt-3 leading-relaxed">
-                Jasa pemrograman profesional — website, dashboard, tugas IT, dan skripsi. Hasil berkualitas, harga terjangkau.
+                Fullstack Web Developer — membangun website, dashboard, dan sistem informasi dengan teknologi modern.
               </p>
               <div className="flex gap-2.5 mt-5">
                 {[
@@ -143,11 +131,8 @@ export default function Footer() {
               <div className="flex flex-col gap-2.5">
                 {[
                   { label: 'Home', href: '#home' },
-                  { label: 'Layanan', href: '#services' },
                   { label: 'Portfolio', href: '#portfolio' },
-                  { label: 'Testimoni', href: '#testimoni' },
-                  { label: 'Harga', href: '#pricing' },
-                  { label: 'FAQ', href: '#faq' },
+                  { label: 'Experience', href: '#experience' },
                   { label: 'Kontak', href: '#contact' },
                 ].map((link) => (
                   <a
@@ -169,7 +154,6 @@ export default function Footer() {
                   { icon: MapPin, text: profile.location },
                   { icon: Phone, text: profile.phone },
                   { icon: Mail, text: profile.email },
-                  { icon: Clock, text: profile.operationalHours },
                 ].map(({ icon: Icon, text }, i) => (
                   <div key={i} className="flex items-center gap-2.5 text-sm text-slate-400">
                     <Icon size={14} className="text-primary shrink-0" />

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { MessageCircle, ExternalLink, MapPin, Briefcase, Users, Star, Clock } from 'lucide-react'
+import { Github, ExternalLink, MapPin, Briefcase, Users, Star, Clock } from 'lucide-react'
 import { profile } from '../data/portfolio'
 
 function StatItem({ icon: Icon, value, label, delay }) {
@@ -20,8 +20,6 @@ function StatItem({ icon: Icon, value, label, delay }) {
 }
 
 export default function Hero() {
-  const whatsappUrl = `https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Rifki, saya tertarik dengan jasa pemrograman Anda. Bisa konsultasi?')}`
-
   return (
     <section
       id="home"
@@ -95,11 +93,11 @@ export default function Hero() {
               transition={{ delay: 0.35 }}
             >
               <h1 className="text-3xl md:text-5xl lg:text-6xl font-black mb-4 tracking-tight leading-tight">
-                <span className="text-white">Butuh Jasa </span>
-                <span className="gradient-text">Pemrograman?</span>
+                <span className="text-white">Hi, Saya </span>
+                <span className="gradient-text">{profile.name}</span>
               </h1>
               <h2 className="text-lg md:text-xl text-slate-300 font-medium mb-3">
-                Website, Dashboard, Tugas IT — Selesai Cepat & Profesional
+                {profile.title}
               </h2>
             </motion.div>
 
@@ -121,13 +119,13 @@ export default function Hero() {
               className="flex flex-wrap items-center justify-center md:justify-start gap-4 mb-10"
             >
               <a
-                href={whatsappUrl}
+                href={profile.social.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#20BD5A] text-white px-7 py-3.5 rounded-xl font-semibold transition-all hover:shadow-lg hover:shadow-[#25D366]/30 hover:-translate-y-0.5 no-underline"
+                className="group inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white px-7 py-3.5 rounded-xl font-semibold transition-all hover:shadow-lg hover:-translate-y-0.5 no-underline"
               >
-                <MessageCircle size={18} />
-                Konsultasi Gratis via WhatsApp
+                <Github size={18} />
+                GitHub
               </a>
               <a
                 href="#portfolio"

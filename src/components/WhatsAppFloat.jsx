@@ -2,7 +2,7 @@ import { MessageCircle } from 'lucide-react'
 import { profile } from '../data/portfolio'
 
 export default function WhatsAppFloat() {
-  const whatsappUrl = `https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Rifki, saya tertarik dengan jasa pemrograman Anda. Bisa konsultasi?')}`
+  const whatsappUrl = `https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Rifki, saya melihat portfolio Anda. Bisa ngobrol?')}`
 
   return (
     <a

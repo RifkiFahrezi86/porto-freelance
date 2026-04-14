@@ -6,7 +6,7 @@ import { profile } from '../data/portfolio'
 export default function CTASection() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-50px' })
-  const whatsappUrl = `https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Rifki, saya ingin konsultasi tentang project. Bisa dibantu?')}`
+  const whatsappUrl = `https://wa.me/${profile.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent('Halo Rifki, saya tertarik untuk berdiskusi tentang project. Bisa ngobrol?')}`
 
   return (
     <section className="py-28 px-6 relative" ref={ref}>
@@ -34,7 +34,7 @@ export default function CTASection() {
               transition={{ delay: 0.2 }}
               className="text-3xl md:text-4xl font-black text-white mb-4"
             >
-              Siap Mulai <span className="gradient-text">Project Anda?</span>
+              Tertarik <span className="gradient-text">Berkolaborasi?</span>
             </motion.h2>
 
             <motion.p
@@ -43,7 +43,7 @@ export default function CTASection() {
               transition={{ delay: 0.3 }}
               className="text-slate-400 mb-4 max-w-lg mx-auto"
             >
-              Konsultasi gratis, tanpa commitment. Mari diskusikan kebutuhan Anda sekarang.
+              Mari berdiskusi tentang project atau peluang kerja sama. Saya selalu terbuka untuk ide-ide baru.
             </motion.p>
 
             <motion.p
@@ -53,7 +53,7 @@ export default function CTASection() {
               className="inline-flex items-center gap-2 text-sm text-primary bg-primary/10 px-4 py-2 rounded-full mb-8"
             >
               <Zap size={14} />
-              Slot terbatas — hanya handle 3-5 project bersamaan untuk menjaga kualitas
+              Open for freelance & collaboration
             </motion.p>
 
             <motion.div

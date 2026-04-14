@@ -18,7 +18,6 @@ const filterTabs = [
   { label: 'Semua', value: 'all' },
   { label: 'Website', value: 'website' },
   { label: 'Dashboard', value: 'dashboard' },
-  { label: 'Akademik', value: 'academic' },
 ]
 
 function ProjectCard({ project, index }) {
