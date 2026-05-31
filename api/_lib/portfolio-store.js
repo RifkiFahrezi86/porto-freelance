@@ -41,7 +41,11 @@ function toNullableString(value) {
   }
 
   const text = String(value).trim();
-  return text ? text : null;
+  if (!text || text === "#") {
+    return null;
+  }
+
+  return text;
 }
 
 function toStringArray(value) {

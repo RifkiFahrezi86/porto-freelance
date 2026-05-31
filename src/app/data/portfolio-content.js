@@ -123,7 +123,7 @@ function toCertificate(certificate, index) {
     title: certificate.title,
     issuer: certificate.issuer,
     date: certificate.date,
-    image: certificate.image || "",
+    image: String(certificate.image || "").trim() === "#" ? "" : (certificate.image || ""),
     credential: certificate.credential || "",
   };
 }

@@ -260,13 +260,18 @@ function normalizeProject(project: Partial<Project>, index: number): Project {
   };
 }
 
+function normalizeAssetUrl(value?: string | null): string {
+  const text = String(value || "").trim();
+  return text && text !== "#" ? text : "";
+}
+
 function normalizeCertificate(certificate: Partial<Certificate>, index: number): Certificate {
   return {
     id: certificate.id || `certificate-${index + 1}`,
     title: certificate.title || "",
     issuer: certificate.issuer || "",
     date: certificate.date || "",
-    image: certificate.image || "",
+    image: normalizeAssetUrl(certificate.image),
     credential: certificate.credential || "",
   };
 }
