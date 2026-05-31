@@ -1,9 +1,9 @@
-import { importRemoteAsset, uploadAsset } from "../_lib/portfolio-store.js";
+import { deleteAsset, importRemoteAsset, uploadAsset } from "../_lib/portfolio-store.js";
 import { readJsonBody, requireAdminToken, sendMethodNotAllowed } from "../_lib/request.js";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return sendMethodNotAllowed(res, ["POST"]);
+  if (!["POST", "DELETE"].includes(req.method)) {
+    return sendMethodNotAllowed(res, ["POST", "DELETE"]);
   }
 
   if (!requireAdminToken(req, res)) {
@@ -12,6 +12,15 @@ export default async function handler(req, res) {
 
   try {
     const body = await readJsonBody(req);
+
+    if (req.method === "DELETE") {
+      await deleteAsset(body.url || body.pathname);
+
+      return res.status(200).json({
+        ok: true,
+      });
+    }
+
     const blob = body.sourceUrl
       ? await importRemoteAsset({
           sourceUrl: body.sourceUrl,

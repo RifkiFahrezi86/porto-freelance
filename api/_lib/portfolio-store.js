@@ -1,5 +1,5 @@
 import path from "node:path";
-import { BlobNotFoundError, head, put } from "@vercel/blob";
+import { BlobNotFoundError, del, head, put } from "@vercel/blob";
 import { portfolioSeed } from "../../src/app/data/portfolio-content.js";
 
 const PORTFOLIO_DATA_PATH = "portfolio/content.json";
@@ -490,4 +490,14 @@ export async function uploadAsset({ fileBase64, originalFilename, contentType, f
     extension,
     contentType: validatedContentType,
   });
+}
+
+export async function deleteAsset(urlOrPathname) {
+  const target = String(urlOrPathname || "").trim();
+
+  if (!target) {
+    throw new Error("URL atau pathname aset harus diisi.");
+  }
+
+  await del(target);
 }
