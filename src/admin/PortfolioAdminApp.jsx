@@ -515,6 +515,85 @@ export default function PortfolioAdminApp() {
     }
   }
 
+  function buildPortfolioPayload(overrides = {}) {
+    const nextProfile = overrides.profile || profile
+    const nextSiteContent = overrides.siteContent || siteContent
+    const nextHeroStats = overrides.heroStats || heroStats
+    const nextJourney = overrides.journey || journey
+    const nextTechStack = overrides.techStack || techStack
+    const nextProjects = overrides.projects || projects
+    const nextCertificates = overrides.certificates || certificates
+
+    return {
+      profile: serializeProfile(nextProfile),
+      siteContent: serializeSiteContent(nextSiteContent),
+      heroStats: nextHeroStats.map(serializeHeroStat),
+      journey: nextJourney.map(serializeJourneyItem),
+      techStack: nextTechStack.map(serializeTechItem),
+      projects: nextProjects.map(serializeProject),
+      certificates: nextCertificates.map(serializeCertificate),
+    }
+  }
+
+  function applySavedPortfolio(payload) {
+    setProfile(hydrateProfile(payload.profile || portfolioSeed.profile))
+    setSiteContent(hydrateSiteContent(payload.siteContent || portfolioSeed.siteContent))
+    setHeroStats((payload.heroStats || portfolioSeed.heroStats || []).map(hydrateHeroStat))
+    setJourney((payload.journey || []).map(hydrateJourneyItem))
+    setTechStack((payload.techStack || []).map(hydrateTechItem))
+    setProjects((payload.projects || []).map(hydrateProject))
+    setCertificates((payload.certificates || []).map(hydrateCertificate))
+    setUpdatedAt(payload.updatedAt || new Date().toISOString())
+    setDirty(false)
+  }
+
+  async function persistPortfolio(overrides = {}, options = {}) {
+    const {
+      successText = 'Semua section portfolio berhasil diperbarui dan tersimpan di Vercel Blob.',
+      errorText,
+      clearNotice = true,
+    } = options
+
+    if (!authToken.trim()) {
+      setNotice({ tone: 'error', text: 'Login admin diperlukan untuk menyimpan perubahan.' })
+      return false
+    }
+
+    setSaving(true)
+    if (clearNotice) {
+      setNotice(null)
+    }
+
+    try {
+      const response = await fetch('/api/portfolio', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': authToken.trim(),
+        },
+        body: JSON.stringify(buildPortfolioPayload(overrides)),
+      })
+
+      const payload = await response.json()
+      if (!response.ok) {
+        throw new Error(payload.error || 'Gagal menyimpan portfolio.')
+      }
+
+      applySavedPortfolio(payload)
+      setNotice({ tone: 'success', text: successText })
+      return true
+    } catch (error) {
+      console.error(error)
+      setNotice({
+        tone: 'error',
+        text: errorText || (error instanceof Error ? error.message : 'Gagal menyimpan portfolio.'),
+      })
+      return false
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function loadPortfolio() {
     setLoading(true)
 
@@ -783,8 +862,12 @@ export default function PortfolioAdminApp() {
         throw new Error(payload.error || 'Gagal mengupload file ke Blob.')
       }
 
-      onSuccess?.(payload.url)
-      setNotice({ tone: 'success', text: `${successText} File tersimpan di Vercel Blob. Klik simpan semua untuk memperbarui data portfolio.` })
+      const nextState = onSuccess?.(payload.url) || {}
+      await persistPortfolio(nextState, {
+        successText: `${successText} File langsung tersimpan dan portfolio ikut diperbarui.`,
+        errorText: 'File berhasil diupload ke Vercel Blob, tetapi data portfolio belum tersimpan. Anda masih bisa klik Simpan semua untuk mencoba lagi.',
+        clearNotice: false,
+      })
     } catch (error) {
       console.error(error)
       setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Gagal mengupload file ke Blob.' })
@@ -799,7 +882,12 @@ export default function PortfolioAdminApp() {
       folder: 'profile',
       filenameHint: profile.name || 'profile-image',
       requestKey: 'profile-image',
-      onSuccess: (url) => updateProfile({ image: url }),
+      onSuccess: (url) => {
+        const nextProfile = { ...profile, image: url }
+        setProfile(nextProfile)
+        setDirty(true)
+        return { profile: nextProfile }
+      },
       successText: 'Foto profil berhasil diupload.',
     })
   }
@@ -812,7 +900,12 @@ export default function PortfolioAdminApp() {
       folder: 'projects',
       filenameHint: project?.filenameHint || project?.title || 'project-image',
       requestKey: `project-${index}`,
-      onSuccess: (url) => updateProject(index, { image: url, sourceAssetUrl: '' }),
+      onSuccess: (url) => {
+        const nextProjects = projects.map((item, currentIndex) => currentIndex === index ? { ...item, image: url, sourceAssetUrl: '' } : item)
+        setProjects(nextProjects)
+        setDirty(true)
+        return { projects: nextProjects }
+      },
       successText: 'Gambar project berhasil diupload.',
     })
   }
@@ -825,59 +918,18 @@ export default function PortfolioAdminApp() {
       folder: 'certificates',
       filenameHint: certificate?.filenameHint || certificate?.title || 'certificate-file',
       requestKey: `certificate-${index}`,
-      onSuccess: (url) => updateCertificate(index, { image: url, sourceAssetUrl: '' }),
+      onSuccess: (url) => {
+        const nextCertificates = certificates.map((item, currentIndex) => currentIndex === index ? { ...item, image: url, sourceAssetUrl: '' } : item)
+        setCertificates(nextCertificates)
+        setDirty(true)
+        return { certificates: nextCertificates }
+      },
       successText: 'File sertifikat berhasil diupload.',
     })
   }
 
   async function savePortfolio() {
-    if (!authToken.trim()) {
-      setNotice({ tone: 'error', text: 'Login admin diperlukan untuk menyimpan perubahan.' })
-      return
-    }
-
-    setSaving(true)
-    setNotice(null)
-
-    try {
-      const response = await fetch('/api/portfolio', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-admin-token': authToken.trim(),
-        },
-        body: JSON.stringify({
-          profile: serializeProfile(profile),
-          siteContent: serializeSiteContent(siteContent),
-          heroStats: heroStats.map(serializeHeroStat),
-          journey: journey.map(serializeJourneyItem),
-          techStack: techStack.map(serializeTechItem),
-          projects: projects.map(serializeProject),
-          certificates: certificates.map(serializeCertificate),
-        }),
-      })
-
-      const payload = await response.json()
-      if (!response.ok) {
-        throw new Error(payload.error || 'Gagal menyimpan portfolio.')
-      }
-
-      setProfile(hydrateProfile(payload.profile || portfolioSeed.profile))
-      setSiteContent(hydrateSiteContent(payload.siteContent || portfolioSeed.siteContent))
-      setHeroStats((payload.heroStats || portfolioSeed.heroStats || []).map(hydrateHeroStat))
-      setJourney((payload.journey || []).map(hydrateJourneyItem))
-      setTechStack((payload.techStack || []).map(hydrateTechItem))
-      setProjects((payload.projects || []).map(hydrateProject))
-      setCertificates((payload.certificates || []).map(hydrateCertificate))
-      setUpdatedAt(payload.updatedAt || new Date().toISOString())
-      setDirty(false)
-      setNotice({ tone: 'success', text: 'Semua section portfolio berhasil diperbarui dan tersimpan di Vercel Blob.' })
-    } catch (error) {
-      console.error(error)
-      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Gagal menyimpan portfolio.' })
-    } finally {
-      setSaving(false)
-    }
+    await persistPortfolio()
   }
 
   const projectCountLabel = `${projects.length} project`
