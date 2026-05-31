@@ -1,20 +1,22 @@
 import { ArrowUpRight } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { Project } from "./portfolio-store";
+import { Project, SiteContent } from "./portfolio-store";
 
 export function Projects({
   items,
+  siteContent,
 }: {
   items: Project[];
+  siteContent: SiteContent;
 }) {
   return (
     <section id="projects" className="bg-[#f5f0e8] py-24">
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-14">
           <div>
-            <div className="text-sm text-amber-700 uppercase tracking-widest mb-3">— Karya</div>
+            <div className="text-sm text-amber-700 uppercase tracking-widest mb-3">{siteContent.projects.eyebrow}</div>
             <h2 className="text-stone-900 tracking-tight text-4xl md:text-5xl max-w-2xl">
-              Pilihan proyek dari arsip saya.
+              {siteContent.projects.title}
             </h2>
           </div>
         </div>

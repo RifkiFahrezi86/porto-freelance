@@ -1,18 +1,20 @@
-import { JourneyItem } from "./portfolio-store";
+import { JourneyItem, SiteContent } from "./portfolio-store";
 
 export function Journey({
   items,
+  siteContent,
 }: {
   items: JourneyItem[];
+  siteContent: SiteContent;
 }) {
   return (
     <section id="journey" className="bg-[#f5f0e8] py-24">
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-14">
           <div>
-            <div className="text-sm text-amber-700 uppercase tracking-widest mb-3">— Perjalanan</div>
+            <div className="text-sm text-amber-700 uppercase tracking-widest mb-3">{siteContent.journey.eyebrow}</div>
             <h2 className="text-stone-900 tracking-tight text-4xl md:text-5xl max-w-2xl">
-              Rangkaian momen yang membentuk saya.
+              {siteContent.journey.title}
             </h2>
           </div>
         </div>

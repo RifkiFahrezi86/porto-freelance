@@ -67,6 +67,110 @@ function toCertificateId(certificate, index) {
   return slugify(certificate?.id || certificate?.title, `certificate-${index + 1}`);
 }
 
+function toJourneyId(item, index) {
+  return slugify(item?.id || `${item?.title}-${item?.place}`, `journey-${index + 1}`);
+}
+
+function toTechId(item, index) {
+  return slugify(item?.id || item?.name, `tech-${index + 1}`);
+}
+
+function toHeroStatId(item, index) {
+  return slugify(item?.id || item?.label, `hero-stat-${index + 1}`);
+}
+
+function normalizeSiteContent(content = {}) {
+  const seed = portfolioSeed.siteContent || {};
+
+  return {
+    brandName: String(content?.brandName || seed?.brandName || "Rifki Nur Fahrezi Ahmad").trim(),
+    brandBadge: String(content?.brandBadge || seed?.brandBadge || "Open for web, AI, dan automation projects").trim(),
+    navigation: {
+      journey: String(content?.navigation?.journey || seed?.navigation?.journey || "Perjalanan").trim(),
+      experience: String(content?.navigation?.experience || seed?.navigation?.experience || "Pengalaman").trim(),
+      projects: String(content?.navigation?.projects || seed?.navigation?.projects || "Karya").trim(),
+      certificates: String(content?.navigation?.certificates || seed?.navigation?.certificates || "Sertifikat").trim(),
+      contact: String(content?.navigation?.contact || seed?.navigation?.contact || "Kontak").trim(),
+      cta: String(content?.navigation?.cta || seed?.navigation?.cta || "Sapa Saya").trim(),
+    },
+    hero: {
+      greeting: String(content?.hero?.greeting || seed?.hero?.greeting || "Halo, saya").trim(),
+      primaryCtaLabel: String(content?.hero?.primaryCtaLabel || seed?.hero?.primaryCtaLabel || "Lihat Karya").trim(),
+      secondaryCtaLabel: String(content?.hero?.secondaryCtaLabel || seed?.hero?.secondaryCtaLabel || "Hubungi Saya").trim(),
+      availabilityLabel: String(content?.hero?.availabilityLabel || seed?.hero?.availabilityLabel || "Tersedia untuk proyek baru").trim(),
+      cardLabel: String(content?.hero?.cardLabel || seed?.hero?.cardLabel || "Web, AI, & Digital Systems").trim(),
+    },
+    journey: {
+      eyebrow: String(content?.journey?.eyebrow || seed?.journey?.eyebrow || "— Perjalanan").trim(),
+      title: String(content?.journey?.title || seed?.journey?.title || "Rangkaian pengalaman yang membentuk cara saya membangun solusi digital.").trim(),
+    },
+    experience: {
+      eyebrow: String(content?.experience?.eyebrow || seed?.experience?.eyebrow || "— Pengalaman").trim(),
+      title: String(content?.experience?.title || seed?.experience?.title || "Saya membangun website, dashboard, automation, dan workflow AI yang benar-benar dipakai.").trim(),
+    },
+    tech: {
+      eyebrow: String(content?.tech?.eyebrow || seed?.tech?.eyebrow || "— Tech Stack").trim(),
+      title: String(content?.tech?.title || seed?.tech?.title || "Stack kerja untuk frontend, backend, database, deployment, dan automasi AI.").trim(),
+    },
+    highlights: {
+      focusLabel: String(content?.highlights?.focusLabel || seed?.highlights?.focusLabel || "Fokus").trim(),
+      focusText: String(content?.highlights?.focusText || seed?.highlights?.focusText || "Website, dashboard, AI workflow, dan sistem informasi").trim(),
+      workStyleLabel: String(content?.highlights?.workStyleLabel || seed?.highlights?.workStyleLabel || "Cara kerja").trim(),
+      workStyleText: String(content?.highlights?.workStyleText || seed?.highlights?.workStyleText || "Cepat, rapi, strategis, dan tetap mudah dirawat setelah rilis").trim(),
+    },
+    projects: {
+      eyebrow: String(content?.projects?.eyebrow || seed?.projects?.eyebrow || "— Karya").trim(),
+      title: String(content?.projects?.title || seed?.projects?.title || "Pilihan proyek dari arsip kerja dan eksperimen yang saya bangun.").trim(),
+    },
+    certificates: {
+      eyebrow: String(content?.certificates?.eyebrow || seed?.certificates?.eyebrow || "— Sertifikat").trim(),
+      title: String(content?.certificates?.title || seed?.certificates?.title || "Bukti belajar, eksplorasi, dan peningkatan skill yang terus berjalan.").trim(),
+      previewLabel: String(content?.certificates?.previewLabel || seed?.certificates?.previewLabel || "Lihat credential").trim(),
+      openLabel: String(content?.certificates?.openLabel || seed?.certificates?.openLabel || "Buka sertifikat").trim(),
+    },
+    contact: {
+      eyebrow: String(content?.contact?.eyebrow || seed?.contact?.eyebrow || "— Kontak").trim(),
+      title: String(content?.contact?.title || seed?.contact?.title || "Punya ide, revisi, atau proyek baru?").trim(),
+      accent: String(content?.contact?.accent || seed?.contact?.accent || "Mari kita bahas langsung.").trim(),
+      footerNote: String(content?.contact?.footerNote || seed?.contact?.footerNote || "Dibuat dengan detail dan standar kerja profesional.").trim(),
+    },
+    seo: {
+      title: String(content?.seo?.title || seed?.seo?.title || "Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions").trim(),
+      description: String(content?.seo?.description || seed?.seo?.description || "Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.").trim(),
+    },
+  };
+}
+
+function normalizeProfile(profile = {}) {
+  const seed = portfolioSeed.profile || {};
+  const social = profile?.social && typeof profile.social === "object" ? profile.social : {};
+
+  return {
+    name: String(profile?.name || seed.name || "").trim(),
+    title: String(profile?.title || seed.title || "").trim(),
+    subtitle: String(profile?.subtitle || seed.subtitle || "").trim(),
+    description: String(profile?.description || seed.description || "").trim(),
+    status: String(profile?.status || seed.status || "").trim(),
+    location: String(profile?.location || seed.location || "").trim(),
+    email: String(profile?.email || seed.email || "").trim(),
+    phone: String(profile?.phone || seed.phone || "").trim(),
+    image: toNullableString(profile?.image) || toNullableString(seed.image) || "/profile.jpeg",
+    social: {
+      github: String(social?.github || seed?.social?.github || "").trim(),
+      instagram: String(social?.instagram || seed?.social?.instagram || "").trim(),
+    },
+  };
+}
+
+function normalizeHeroStatItem(item, index) {
+  return {
+    id: toHeroStatId(item, index),
+    value: String(item?.value || "").trim(),
+    label: String(item?.label || "").trim(),
+    visible: item?.visible !== false,
+  };
+}
+
 function normalizeProject(project, index) {
   return {
     id: toProjectId(project, index),
@@ -90,11 +194,40 @@ function normalizeCertificate(certificate, index) {
   };
 }
 
+function normalizeJourneyItem(item, index) {
+  return {
+    id: toJourneyId(item, index),
+    year: String(item?.year || "").trim(),
+    title: String(item?.title || "").trim(),
+    place: String(item?.place || "").trim(),
+    description: String(item?.description || "").trim(),
+  };
+}
+
+function normalizeTechStackItem(item, index) {
+  return {
+    id: toTechId(item, index),
+    name: String(item?.name || "").trim(),
+    level: String(item?.level || "").trim() || "Mahir",
+    icon: String(item?.icon || item?.name || "").trim() || "Code",
+  };
+}
+
 export function normalizePortfolioData(data = {}) {
+  const profile = normalizeProfile(data.profile);
+  const siteContent = normalizeSiteContent(data.siteContent);
+  const heroStats = Array.isArray(data.heroStats) ? data.heroStats : portfolioSeed.heroStats;
+  const journey = Array.isArray(data.journey) ? data.journey : portfolioSeed.journey;
+  const techStack = Array.isArray(data.techStack) ? data.techStack : portfolioSeed.techStack;
   const projects = Array.isArray(data.projects) ? data.projects : portfolioSeed.projects;
   const certificates = Array.isArray(data.certificates) ? data.certificates : portfolioSeed.certificates;
 
   return {
+    profile,
+    siteContent,
+    heroStats: heroStats.map(normalizeHeroStatItem),
+    journey: journey.map(normalizeJourneyItem),
+    techStack: techStack.map(normalizeTechStackItem),
     projects: projects.map(normalizeProject),
     certificates: certificates.map(normalizeCertificate),
     updatedAt: data.updatedAt || new Date().toISOString(),

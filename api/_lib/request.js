@@ -29,20 +29,33 @@ export function sendMethodNotAllowed(res, methods) {
   return res.status(405).json({ error: "Method tidak diizinkan." });
 }
 
-export function requireAdminToken(req, res) {
+export function validateAdminToken(providedToken) {
   const expectedToken = process.env.PORTFOLIO_ADMIN_TOKEN;
 
   if (!expectedToken) {
-    res.status(500).json({
+    return {
+      ok: false,
+      status: 500,
       error: "PORTFOLIO_ADMIN_TOKEN belum diatur di environment Vercel.",
-    });
-    return false;
+    };
   }
 
-  const providedToken = req.headers["x-admin-token"];
-
   if (providedToken !== expectedToken) {
-    res.status(401).json({ error: "Token admin tidak valid." });
+    return {
+      ok: false,
+      status: 401,
+      error: "Token admin tidak valid.",
+    };
+  }
+
+  return { ok: true };
+}
+
+export function requireAdminToken(req, res) {
+  const validation = validateAdminToken(req.headers["x-admin-token"]);
+
+  if (!validation.ok) {
+    res.status(validation.status).json({ error: validation.error });
     return false;
   }
 

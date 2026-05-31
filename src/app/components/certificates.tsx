@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { Certificate } from "./portfolio-store";
+import { Certificate, SiteContent } from "./portfolio-store";
 
 function isDocumentUrl(value: string) {
   return /\.pdf($|[?#])/i.test(value);
@@ -15,8 +15,10 @@ function isDocumentUrl(value: string) {
 
 export function Certificates({
   items,
+  siteContent,
 }: {
   items: Certificate[];
+  siteContent: SiteContent;
 }) {
   const [preview, setPreview] = useState<Certificate | null>(null);
 
@@ -25,9 +27,9 @@ export function Certificates({
       <div className="max-w-6xl mx-auto px-6">
         <div className="mb-14">
           <div>
-            <div className="text-sm text-amber-700 uppercase tracking-widest mb-3">— Sertifikat</div>
+            <div className="text-sm text-amber-700 uppercase tracking-widest mb-3">{siteContent.certificates.eyebrow}</div>
             <h2 className="text-stone-900 tracking-tight text-4xl md:text-5xl max-w-2xl">
-              Bukti dari setiap langkah belajar.
+              {siteContent.certificates.title}
             </h2>
           </div>
         </div>
@@ -58,7 +60,7 @@ export function Certificates({
                 >
                   <div className="text-center">
                     <FileText className="mx-auto h-10 w-10 text-amber-700" />
-                    <div className="mt-3 text-sm font-medium">Lihat credential</div>
+                    <div className="mt-3 text-sm font-medium">{siteContent.certificates.previewLabel}</div>
                   </div>
                 </a>
               )}
@@ -67,10 +69,11 @@ export function Certificates({
                   <Award className="w-3.5 h-3.5" /> {c.issuer} · {c.date}
                 </div>
                 <div className="text-stone-900">{c.title}</div>
+                {c.credential ? <div className="mt-2 text-xs uppercase tracking-[0.18em] text-stone-500">{c.credential}</div> : null}
                 {c.image ? (
                   <a href={c.image} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm text-stone-600 no-underline hover:text-stone-900">
                     <ExternalLink className="h-4 w-4" />
-                    Buka sertifikat
+                    {siteContent.certificates.openLabel}
                   </a>
                 ) : null}
               </div>

@@ -1,16 +1,22 @@
 import { Github, Instagram, Mail, MessageCircle, Settings2 } from "lucide-react";
-import { profile } from "../../data/portfolio.js";
+import { Profile, SiteContent } from "./portfolio-store";
 
-export function Contact() {
+export function Contact({
+  profile,
+  siteContent,
+}: {
+  profile: Profile;
+  siteContent: SiteContent;
+}) {
   const whatsappUrl = `https://wa.me/${profile.phone.replace(/[^0-9]/g, "")}`;
 
   return (
     <section id="contact" className="bg-stone-900 text-stone-100 py-28">
       <div className="max-w-6xl mx-auto px-6">
-        <div className="text-sm text-amber-400 uppercase tracking-widest mb-4">— Kontak</div>
+        <div className="text-sm text-amber-400 uppercase tracking-widest mb-4">{siteContent.contact.eyebrow}</div>
         <h2 className="text-4xl md:text-6xl tracking-tight leading-tight max-w-3xl">
-          Punya ide? Mari bicarakan{" "}
-          <span className="italic font-serif text-amber-300">sambil ngopi</span>.
+          {siteContent.contact.title}{" "}
+          <span className="italic font-serif text-amber-300">{siteContent.contact.accent}</span>
         </h2>
 
         <div className="mt-12 flex flex-wrap gap-4">
@@ -53,7 +59,7 @@ export function Contact() {
         </div>
 
         <div className="mt-24 pt-8 border-t border-stone-800 flex flex-wrap items-center justify-between gap-4 text-sm text-stone-500">
-          <div>© 2026 Rifki.dev. Dibuat dengan ketelitian.</div>
+          <div>© 2026 {siteContent.brandName}. {siteContent.contact.footerNote}</div>
           <div>{profile.location}</div>
         </div>
       </div>

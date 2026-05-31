@@ -1,19 +1,32 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   AlertCircle,
+  Briefcase,
   CheckCircle2,
+  Code2,
   ExternalLink,
   FileText,
   FolderKanban,
   LoaderCircle,
+  LogIn,
+  LogOut,
   Plus,
   Save,
   ShieldCheck,
   Sparkles,
   Trash2,
   UploadCloud,
+  UserRound,
 } from 'lucide-react'
 import { portfolioSeed } from '../app/data/portfolio-content.js'
+
+function getStoredAdminToken() {
+  if (typeof window === 'undefined') {
+    return ''
+  }
+
+  return sessionStorage.getItem('portfolio_admin_token') || ''
+}
 
 function buildId(prefix) {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -38,6 +51,117 @@ function isDocumentUrl(value) {
   return /\.pdf($|[?#])/i.test(String(value || ''))
 }
 
+function hydrateProfile(profile = {}) {
+  const social = profile.social && typeof profile.social === 'object' ? profile.social : {}
+  const seed = portfolioSeed.profile || {}
+
+  return {
+    name: profile.name || seed.name || '',
+    title: profile.title || seed.title || '',
+    subtitle: profile.subtitle || seed.subtitle || '',
+    description: profile.description || seed.description || '',
+    status: profile.status || seed.status || '',
+    location: profile.location || seed.location || '',
+    email: profile.email || seed.email || '',
+    phone: profile.phone || seed.phone || '',
+    image: profile.image || seed.image || '/profile.jpeg',
+    social: {
+      github: social.github || seed.social?.github || '',
+      instagram: social.instagram || seed.social?.instagram || '',
+    },
+  }
+}
+
+function hydrateSiteContent(content = {}) {
+  const seed = portfolioSeed.siteContent || {}
+
+  return {
+    brandName: content.brandName || seed.brandName || 'Rifki Nur Fahrezi Ahmad',
+    brandBadge: content.brandBadge || seed.brandBadge || 'Open for web, AI, dan automation projects',
+    navigation: {
+      journey: content.navigation?.journey || seed.navigation?.journey || 'Perjalanan',
+      experience: content.navigation?.experience || seed.navigation?.experience || 'Pengalaman',
+      projects: content.navigation?.projects || seed.navigation?.projects || 'Karya',
+      certificates: content.navigation?.certificates || seed.navigation?.certificates || 'Sertifikat',
+      contact: content.navigation?.contact || seed.navigation?.contact || 'Kontak',
+      cta: content.navigation?.cta || seed.navigation?.cta || 'Sapa Saya',
+    },
+    hero: {
+      greeting: content.hero?.greeting || seed.hero?.greeting || 'Halo, saya',
+      primaryCtaLabel: content.hero?.primaryCtaLabel || seed.hero?.primaryCtaLabel || 'Lihat Karya',
+      secondaryCtaLabel: content.hero?.secondaryCtaLabel || seed.hero?.secondaryCtaLabel || 'Hubungi Saya',
+      availabilityLabel: content.hero?.availabilityLabel || seed.hero?.availabilityLabel || 'Tersedia untuk proyek baru',
+      cardLabel: content.hero?.cardLabel || seed.hero?.cardLabel || 'Web, AI, & Digital Systems',
+    },
+    journey: {
+      eyebrow: content.journey?.eyebrow || seed.journey?.eyebrow || '— Perjalanan',
+      title: content.journey?.title || seed.journey?.title || 'Rangkaian pengalaman yang membentuk cara saya membangun solusi digital.',
+    },
+    experience: {
+      eyebrow: content.experience?.eyebrow || seed.experience?.eyebrow || '— Pengalaman',
+      title: content.experience?.title || seed.experience?.title || 'Saya membangun website, dashboard, automation, dan workflow AI yang benar-benar dipakai.',
+    },
+    tech: {
+      eyebrow: content.tech?.eyebrow || seed.tech?.eyebrow || '— Tech Stack',
+      title: content.tech?.title || seed.tech?.title || 'Stack kerja untuk frontend, backend, database, deployment, dan automasi AI.',
+    },
+    highlights: {
+      focusLabel: content.highlights?.focusLabel || seed.highlights?.focusLabel || 'Fokus',
+      focusText: content.highlights?.focusText || seed.highlights?.focusText || 'Website, dashboard, AI workflow, dan sistem informasi',
+      workStyleLabel: content.highlights?.workStyleLabel || seed.highlights?.workStyleLabel || 'Cara kerja',
+      workStyleText: content.highlights?.workStyleText || seed.highlights?.workStyleText || 'Cepat, rapi, strategis, dan tetap mudah dirawat setelah rilis',
+    },
+    projects: {
+      eyebrow: content.projects?.eyebrow || seed.projects?.eyebrow || '— Karya',
+      title: content.projects?.title || seed.projects?.title || 'Pilihan proyek dari arsip kerja dan eksperimen yang saya bangun.',
+    },
+    certificates: {
+      eyebrow: content.certificates?.eyebrow || seed.certificates?.eyebrow || '— Sertifikat',
+      title: content.certificates?.title || seed.certificates?.title || 'Bukti belajar, eksplorasi, dan peningkatan skill yang terus berjalan.',
+      previewLabel: content.certificates?.previewLabel || seed.certificates?.previewLabel || 'Lihat credential',
+      openLabel: content.certificates?.openLabel || seed.certificates?.openLabel || 'Buka sertifikat',
+    },
+    contact: {
+      eyebrow: content.contact?.eyebrow || seed.contact?.eyebrow || '— Kontak',
+      title: content.contact?.title || seed.contact?.title || 'Punya ide, revisi, atau proyek baru?',
+      accent: content.contact?.accent || seed.contact?.accent || 'Mari kita bahas langsung.',
+      footerNote: content.contact?.footerNote || seed.contact?.footerNote || 'Dibuat dengan detail dan standar kerja profesional.',
+    },
+    seo: {
+      title: content.seo?.title || seed.seo?.title || 'Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions',
+      description: content.seo?.description || seed.seo?.description || 'Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.',
+    },
+  }
+}
+
+function hydrateHeroStat(item = {}) {
+  return {
+    id: item.id || buildId('hero-stat'),
+    value: item.value || '',
+    label: item.label || '',
+    visible: item.visible !== false,
+  }
+}
+
+function hydrateJourneyItem(item = {}) {
+  return {
+    id: item.id || buildId('journey'),
+    year: item.year || '',
+    title: item.title || '',
+    place: item.place || '',
+    description: item.description || '',
+  }
+}
+
+function hydrateTechItem(item = {}) {
+  return {
+    id: item.id || buildId('tech'),
+    name: item.name || '',
+    level: item.level || 'Mahir',
+    icon: item.icon || item.name || 'Code',
+  }
+}
+
 function hydrateProject(project = {}) {
   return {
     id: project.id || buildId('project'),
@@ -59,8 +183,115 @@ function hydrateCertificate(certificate = {}) {
     issuer: certificate.issuer || '',
     date: certificate.date || '',
     image: certificate.image || '',
+    credential: certificate.credential || '',
     sourceAssetUrl: '',
     filenameHint: '',
+  }
+}
+
+function serializeProfile(profile) {
+  return {
+    name: profile.name.trim(),
+    title: profile.title.trim(),
+    subtitle: profile.subtitle.trim(),
+    description: profile.description.trim(),
+    status: profile.status.trim(),
+    location: profile.location.trim(),
+    email: profile.email.trim(),
+    phone: profile.phone.trim(),
+    image: profile.image.trim() || '/profile.jpeg',
+    social: {
+      github: profile.social.github.trim(),
+      instagram: profile.social.instagram.trim(),
+    },
+  }
+}
+
+function serializeSiteContent(content) {
+  return {
+    brandName: content.brandName.trim(),
+    brandBadge: content.brandBadge.trim(),
+    navigation: {
+      journey: content.navigation.journey.trim(),
+      experience: content.navigation.experience.trim(),
+      projects: content.navigation.projects.trim(),
+      certificates: content.navigation.certificates.trim(),
+      contact: content.navigation.contact.trim(),
+      cta: content.navigation.cta.trim(),
+    },
+    hero: {
+      greeting: content.hero.greeting.trim(),
+      primaryCtaLabel: content.hero.primaryCtaLabel.trim(),
+      secondaryCtaLabel: content.hero.secondaryCtaLabel.trim(),
+      availabilityLabel: content.hero.availabilityLabel.trim(),
+      cardLabel: content.hero.cardLabel.trim(),
+    },
+    journey: {
+      eyebrow: content.journey.eyebrow.trim(),
+      title: content.journey.title.trim(),
+    },
+    experience: {
+      eyebrow: content.experience.eyebrow.trim(),
+      title: content.experience.title.trim(),
+    },
+    tech: {
+      eyebrow: content.tech.eyebrow.trim(),
+      title: content.tech.title.trim(),
+    },
+    highlights: {
+      focusLabel: content.highlights.focusLabel.trim(),
+      focusText: content.highlights.focusText.trim(),
+      workStyleLabel: content.highlights.workStyleLabel.trim(),
+      workStyleText: content.highlights.workStyleText.trim(),
+    },
+    projects: {
+      eyebrow: content.projects.eyebrow.trim(),
+      title: content.projects.title.trim(),
+    },
+    certificates: {
+      eyebrow: content.certificates.eyebrow.trim(),
+      title: content.certificates.title.trim(),
+      previewLabel: content.certificates.previewLabel.trim(),
+      openLabel: content.certificates.openLabel.trim(),
+    },
+    contact: {
+      eyebrow: content.contact.eyebrow.trim(),
+      title: content.contact.title.trim(),
+      accent: content.contact.accent.trim(),
+      footerNote: content.contact.footerNote.trim(),
+    },
+    seo: {
+      title: content.seo.title.trim(),
+      description: content.seo.description.trim(),
+    },
+  }
+}
+
+function serializeHeroStat(item) {
+  return {
+    id: item.id,
+    value: item.value.trim(),
+    label: item.label.trim(),
+    visible: item.visible !== false,
+  }
+}
+
+function serializeJourneyItem(item) {
+  return {
+    id: item.id,
+    year: item.year.trim(),
+    title: item.title.trim(),
+    place: item.place.trim(),
+    description: item.description.trim(),
+  }
+}
+
+function serializeTechItem(item) {
+  return {
+    id: item.id,
+    name: item.name.trim(),
+    level: item.level.trim() || 'Mahir',
+    icon: item.icon.trim() || item.name.trim() || 'Code',
   }
 }
 
@@ -83,7 +314,20 @@ function serializeCertificate(certificate) {
     issuer: certificate.issuer.trim(),
     date: certificate.date.trim(),
     image: certificate.image.trim() || null,
+    credential: certificate.credential.trim() || null,
   }
+}
+
+function emptyJourneyItem() {
+  return hydrateJourneyItem({})
+}
+
+function emptyHeroStat() {
+  return hydrateHeroStat({ visible: true })
+}
+
+function emptyTechItem() {
+  return hydrateTechItem({})
 }
 
 function emptyProject() {
@@ -104,76 +348,236 @@ function Field({ label, children, hint }) {
   )
 }
 
-function textInputClass() {
-  return 'w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-200'
-}
+const textInputClass = 'w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-200'
 
 export default function PortfolioAdminApp() {
-  const [adminToken, setAdminToken] = useState(() => sessionStorage.getItem('portfolio_admin_token') || '')
+  const [authToken, setAuthToken] = useState(() => getStoredAdminToken())
+  const [loginValue, setLoginValue] = useState(() => getStoredAdminToken())
+  const [authenticated, setAuthenticated] = useState(false)
+  const [booting, setBooting] = useState(true)
+  const [authSubmitting, setAuthSubmitting] = useState(false)
+
+  const [profile, setProfile] = useState(() => hydrateProfile(portfolioSeed.profile))
+  const [siteContent, setSiteContent] = useState(() => hydrateSiteContent(portfolioSeed.siteContent))
+  const [heroStats, setHeroStats] = useState(() => (portfolioSeed.heroStats || []).map(hydrateHeroStat))
+  const [journey, setJourney] = useState(() => portfolioSeed.journey.map(hydrateJourneyItem))
+  const [techStack, setTechStack] = useState(() => portfolioSeed.techStack.map(hydrateTechItem))
   const [projects, setProjects] = useState(() => portfolioSeed.projects.map(hydrateProject))
   const [certificates, setCertificates] = useState(() => portfolioSeed.certificates.map(hydrateCertificate))
   const [updatedAt, setUpdatedAt] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [importingKey, setImportingKey] = useState('')
   const [notice, setNotice] = useState(null)
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
-    if (adminToken) {
-      sessionStorage.setItem('portfolio_admin_token', adminToken)
+    const storedToken = getStoredAdminToken()
+
+    if (!storedToken) {
+      setBooting(false)
       return
     }
 
-    sessionStorage.removeItem('portfolio_admin_token')
-  }, [adminToken])
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function loadPortfolio() {
-      try {
-        const response = await fetch('/api/portfolio')
-        if (!response.ok) {
-          throw new Error('Gagal memuat portfolio.')
-        }
-
-        const payload = await response.json()
-        if (cancelled) {
-          return
-        }
-
-        setProjects((payload.projects || portfolioSeed.projects).map(hydrateProject))
-        setCertificates((payload.certificates || portfolioSeed.certificates).map(hydrateCertificate))
-        setUpdatedAt(payload.updatedAt || null)
-        setDirty(false)
-      } catch (error) {
-        console.error(error)
-        if (!cancelled) {
-          setNotice({ tone: 'error', text: 'API portfolio belum aktif. Editor memakai data fallback dari project.' })
-        }
-      } finally {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      }
-    }
-
-    loadPortfolio()
-
-    return () => {
-      cancelled = true
-    }
+    void authenticate(storedToken, { silent: true })
   }, [])
-
-  const projectCountLabel = useMemo(() => `${projects.length} project`, [projects.length])
-  const certificateCountLabel = useMemo(() => `${certificates.length} certificate`, [certificates.length])
 
   function touch() {
     setDirty(true)
     if (notice?.tone === 'success') {
       setNotice(null)
     }
+  }
+
+  async function loadPortfolio() {
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/portfolio')
+      if (!response.ok) {
+        throw new Error('Gagal memuat portfolio.')
+      }
+
+      const payload = await response.json()
+      setProfile(hydrateProfile(payload.profile || portfolioSeed.profile))
+      setSiteContent(hydrateSiteContent(payload.siteContent || portfolioSeed.siteContent))
+      setHeroStats((payload.heroStats || portfolioSeed.heroStats || []).map(hydrateHeroStat))
+      setJourney((payload.journey || portfolioSeed.journey).map(hydrateJourneyItem))
+      setTechStack((payload.techStack || portfolioSeed.techStack).map(hydrateTechItem))
+      setProjects((payload.projects || portfolioSeed.projects).map(hydrateProject))
+      setCertificates((payload.certificates || portfolioSeed.certificates).map(hydrateCertificate))
+      setUpdatedAt(payload.updatedAt || null)
+      setDirty(false)
+    } catch (error) {
+      console.error(error)
+      setNotice({ tone: 'error', text: 'API portfolio belum aktif. Editor memakai data fallback dari project.' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function authenticate(token, options = {}) {
+    const { silent = false } = options
+    const trimmedToken = String(token || '').trim()
+
+    if (!trimmedToken) {
+      setBooting(false)
+      if (!silent) {
+        setNotice({ tone: 'error', text: 'Masukkan token admin untuk login.' })
+      }
+      return false
+    }
+
+    setAuthSubmitting(true)
+    if (!silent) {
+      setNotice(null)
+    }
+
+    try {
+      const response = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token: trimmedToken }),
+      })
+
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(payload.error || 'Gagal login sebagai admin.')
+      }
+
+      sessionStorage.setItem('portfolio_admin_token', trimmedToken)
+      setAuthToken(trimmedToken)
+      setLoginValue(trimmedToken)
+      setAuthenticated(true)
+      await loadPortfolio()
+
+      if (!silent) {
+        setNotice({ tone: 'success', text: 'Login admin berhasil. Control room siap dipakai.' })
+      }
+
+      return true
+    } catch (error) {
+      console.error(error)
+      sessionStorage.removeItem('portfolio_admin_token')
+      setAuthToken('')
+      setAuthenticated(false)
+      setLoginValue('')
+      setProfile(hydrateProfile(portfolioSeed.profile))
+      setSiteContent(hydrateSiteContent(portfolioSeed.siteContent))
+      setHeroStats((portfolioSeed.heroStats || []).map(hydrateHeroStat))
+      setJourney(portfolioSeed.journey.map(hydrateJourneyItem))
+      setTechStack(portfolioSeed.techStack.map(hydrateTechItem))
+      setProjects(portfolioSeed.projects.map(hydrateProject))
+      setCertificates(portfolioSeed.certificates.map(hydrateCertificate))
+
+      setNotice({
+        tone: 'error',
+        text: error instanceof Error ? error.message : 'Gagal login sebagai admin.',
+      })
+
+      return false
+    } finally {
+      setAuthSubmitting(false)
+      setBooting(false)
+    }
+  }
+
+  function logout() {
+    sessionStorage.removeItem('portfolio_admin_token')
+    setAuthToken('')
+    setLoginValue('')
+    setAuthenticated(false)
+    setSaving(false)
+    setImportingKey('')
+    setDirty(false)
+    setUpdatedAt(null)
+    setNotice(null)
+    setProfile(hydrateProfile(portfolioSeed.profile))
+    setSiteContent(hydrateSiteContent(portfolioSeed.siteContent))
+    setHeroStats((portfolioSeed.heroStats || []).map(hydrateHeroStat))
+    setJourney(portfolioSeed.journey.map(hydrateJourneyItem))
+    setTechStack(portfolioSeed.techStack.map(hydrateTechItem))
+    setProjects(portfolioSeed.projects.map(hydrateProject))
+    setCertificates(portfolioSeed.certificates.map(hydrateCertificate))
+  }
+
+  function updateProfile(patch) {
+    setProfile((current) => ({ ...current, ...patch }))
+    touch()
+  }
+
+  function updateProfileSocial(key, value) {
+    setProfile((current) => ({
+      ...current,
+      social: {
+        ...current.social,
+        [key]: value,
+      },
+    }))
+    touch()
+  }
+
+  function updateSiteContent(patch) {
+    setSiteContent((current) => ({ ...current, ...patch }))
+    touch()
+  }
+
+  function updateSiteContentSection(section, patch) {
+    setSiteContent((current) => ({
+      ...current,
+      [section]: {
+        ...current[section],
+        ...patch,
+      },
+    }))
+    touch()
+  }
+
+  function updateHeroStat(index, patch) {
+    setHeroStats((current) => current.map((item, currentIndex) => currentIndex === index ? { ...item, ...patch } : item))
+    touch()
+  }
+
+  function addHeroStat() {
+    setHeroStats((current) => [...current, emptyHeroStat()])
+    touch()
+  }
+
+  function removeHeroStat(index) {
+    setHeroStats((current) => current.filter((_, currentIndex) => currentIndex !== index))
+    touch()
+  }
+
+  function updateJourneyItem(index, patch) {
+    setJourney((current) => current.map((item, currentIndex) => currentIndex === index ? { ...item, ...patch } : item))
+    touch()
+  }
+
+  function addJourneyItem() {
+    setJourney((current) => [emptyJourneyItem(), ...current])
+    touch()
+  }
+
+  function removeJourneyItem(index) {
+    setJourney((current) => current.filter((_, currentIndex) => currentIndex !== index))
+    touch()
+  }
+
+  function updateTechItem(index, patch) {
+    setTechStack((current) => current.map((item, currentIndex) => currentIndex === index ? { ...item, ...patch } : item))
+    touch()
+  }
+
+  function addTechItem() {
+    setTechStack((current) => [...current, emptyTechItem()])
+    touch()
+  }
+
+  function removeTechItem(index) {
+    setTechStack((current) => current.filter((_, currentIndex) => currentIndex !== index))
+    touch()
   }
 
   function updateProject(index, patch) {
@@ -207,8 +611,8 @@ export default function PortfolioAdminApp() {
   }
 
   async function importAsset(kind, index) {
-    if (!adminToken.trim()) {
-      setNotice({ tone: 'error', text: 'Masukkan admin token sebelum mengimpor file ke Vercel Blob.' })
+    if (!authToken.trim()) {
+      setNotice({ tone: 'error', text: 'Login admin diperlukan sebelum mengimpor file ke Vercel Blob.' })
       return
     }
 
@@ -229,7 +633,7 @@ export default function PortfolioAdminApp() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-token': adminToken.trim(),
+          'x-admin-token': authToken.trim(),
         },
         body: JSON.stringify({
           sourceUrl,
@@ -259,8 +663,8 @@ export default function PortfolioAdminApp() {
   }
 
   async function savePortfolio() {
-    if (!adminToken.trim()) {
-      setNotice({ tone: 'error', text: 'Masukkan admin token untuk menyimpan perubahan.' })
+    if (!authToken.trim()) {
+      setNotice({ tone: 'error', text: 'Login admin diperlukan untuk menyimpan perubahan.' })
       return
     }
 
@@ -272,9 +676,14 @@ export default function PortfolioAdminApp() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-token': adminToken.trim(),
+          'x-admin-token': authToken.trim(),
         },
         body: JSON.stringify({
+          profile: serializeProfile(profile),
+          siteContent: serializeSiteContent(siteContent),
+          heroStats: heroStats.map(serializeHeroStat),
+          journey: journey.map(serializeJourneyItem),
+          techStack: techStack.map(serializeTechItem),
           projects: projects.map(serializeProject),
           certificates: certificates.map(serializeCertificate),
         }),
@@ -285,17 +694,122 @@ export default function PortfolioAdminApp() {
         throw new Error(payload.error || 'Gagal menyimpan portfolio.')
       }
 
+      setProfile(hydrateProfile(payload.profile || portfolioSeed.profile))
+      setSiteContent(hydrateSiteContent(payload.siteContent || portfolioSeed.siteContent))
+      setHeroStats((payload.heroStats || portfolioSeed.heroStats || []).map(hydrateHeroStat))
+      setJourney((payload.journey || []).map(hydrateJourneyItem))
+      setTechStack((payload.techStack || []).map(hydrateTechItem))
       setProjects((payload.projects || []).map(hydrateProject))
       setCertificates((payload.certificates || []).map(hydrateCertificate))
       setUpdatedAt(payload.updatedAt || new Date().toISOString())
       setDirty(false)
-      setNotice({ tone: 'success', text: 'Portfolio publik berhasil diperbarui dan metadata tersimpan di Vercel Blob.' })
+      setNotice({ tone: 'success', text: 'Semua section portfolio berhasil diperbarui dan tersimpan di Vercel Blob.' })
     } catch (error) {
       console.error(error)
       setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Gagal menyimpan portfolio.' })
     } finally {
       setSaving(false)
     }
+  }
+
+  const projectCountLabel = `${projects.length} project`
+  const certificateCountLabel = `${certificates.length} certificate`
+  const journeyCountLabel = `${journey.length} catatan pengalaman`
+  const heroStatCountLabel = `${heroStats.length} hero stat`
+  const techCountLabel = `${techStack.length} tech stack`
+
+  if (booting) {
+    return (
+      <div className="min-h-screen bg-[#fbf8f3] text-stone-900">
+        <div className="mx-auto flex min-h-screen max-w-3xl items-center justify-center px-6 py-10">
+          <div className="flex items-center gap-3 rounded-full border border-stone-200 bg-white px-6 py-4 text-stone-700 shadow-[0_18px_60px_rgba(120,113,108,0.07)]">
+            <LoaderCircle size={18} className="animate-spin text-amber-700" />
+            <span>Memeriksa sesi admin...</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen bg-[#fbf8f3] text-stone-900">
+        <div className="mx-auto flex min-h-screen max-w-6xl items-center px-6 py-10 lg:px-8">
+          <div className="grid w-full gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)]">
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_24px_80px_rgba(120,113,108,0.08)]">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
+                <Sparkles size={14} />
+                Portfolio Control Room
+              </div>
+              <h1 className="text-4xl font-black tracking-tight text-stone-900 md:text-6xl">
+                Login admin untuk mengelola semua isi portfolio.
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600 md:text-base">
+                Setelah login, Anda bisa mengedit branding, hero, SEO, profil, hero stats, catatan pengalaman, tech stack, project, dan certificate dari satu panel yang sama.
+              </p>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {[
+                  'Edit brand name, judul tab, copy hero, dan metadata SEO',
+                  'Atur nama, foto, subtitle, kontak, dan semua teks utama website',
+                  'Kelola hero stats agar klien, rating, atau label lain bisa dihapus atau diganti',
+                  'Kelola seluruh pengalaman kerja dan catatan perjalanan',
+                  'Kembalikan, beri logo, dan ubah tech stack kapan saja',
+                  'Tambah, hapus, dan impor media project serta certificate',
+                ].map((item) => (
+                  <div key={item} className="rounded-3xl border border-stone-200 bg-stone-50 px-5 py-4 text-sm leading-6 text-stone-700">
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_24px_80px_rgba(120,113,108,0.08)]">
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
+                <ShieldCheck size={14} />
+                Admin Login
+              </div>
+
+              <h2 className="text-3xl font-black tracking-tight text-stone-900">
+                Masuk ke panel editor
+              </h2>
+              <p className="mt-3 text-sm leading-7 text-stone-600">
+                Gunakan token yang sama dengan environment PORTFOLIO_ADMIN_TOKEN di Vercel.
+              </p>
+
+              <div className="mt-8 space-y-4">
+                <Field label="Admin token">
+                  <input
+                    type="password"
+                    value={loginValue}
+                    onChange={(event) => setLoginValue(event.target.value)}
+                    className={textInputClass}
+                    placeholder="Masukkan admin token"
+                  />
+                </Field>
+
+                <button
+                  type="button"
+                  onClick={() => authenticate(loginValue)}
+                  disabled={authSubmitting}
+                  className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-stone-900 px-6 text-sm font-semibold text-stone-50 transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {authSubmitting ? <LoaderCircle size={18} className="animate-spin" /> : <LogIn size={18} />}
+                  Login sebagai admin
+                </button>
+              </div>
+
+              {notice ? (
+                <div className={`mt-6 flex items-start gap-3 rounded-2xl border px-4 py-4 text-sm ${notice.tone === 'success' ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-800'}`}>
+                  {notice.tone === 'success' ? <CheckCircle2 size={18} className="mt-0.5 shrink-0" /> : <AlertCircle size={18} className="mt-0.5 shrink-0" />}
+                  <span>{notice.text}</span>
+                </div>
+              ) : null}
+            </section>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -309,24 +823,26 @@ export default function PortfolioAdminApp() {
                 Portfolio Control Room
               </div>
               <h1 className="text-4xl font-black tracking-tight text-stone-900 md:text-6xl">
-                Simpan project dan certificate dengan desain yang sama seperti website publik
+                Editor lengkap untuk mengelola portfolio Anda seperti website profesional.
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600 md:text-base">
-                Panel ini dipakai untuk mengelola kartu project dan certificate, lalu menyimpan gambar atau PDF dari URL ke Vercel Blob sebelum tampil di website Anda.
+                Semua section utama sekarang tersambung ke data yang sama: branding, SEO, hero, profil, hero stats, pengalaman, tech stack, project, dan certificate.
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end lg:min-w-[420px]">
-              <Field label="Admin token" hint="Harus sama dengan environment PORTFOLIO_ADMIN_TOKEN di Vercel.">
-                <input
-                  type="password"
-                  value={adminToken}
-                  onChange={(event) => setAdminToken(event.target.value)}
-                  className={textInputClass()}
-                  placeholder="Masukkan admin token"
-                />
-              </Field>
-
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+                <ShieldCheck size={16} />
+                Login admin aktif
+              </span>
+              <button
+                type="button"
+                onClick={logout}
+                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 text-sm font-semibold text-stone-800 transition hover:bg-stone-50"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
               <button
                 type="button"
                 onClick={savePortfolio}
@@ -334,12 +850,28 @@ export default function PortfolioAdminApp() {
                 className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full bg-stone-900 px-6 text-sm font-semibold text-stone-50 transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {saving ? <LoaderCircle size={18} className="animate-spin" /> : <Save size={18} />}
-                Simpan perubahan
+                Simpan semua perubahan
               </button>
             </div>
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-stone-600">
+            <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-2">
+              <UserRound size={16} className="text-amber-700" />
+              Branding + profil
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-2">
+              <Sparkles size={16} className="text-amber-700" />
+              {heroStatCountLabel}
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-2">
+              <Briefcase size={16} className="text-amber-700" />
+              {journeyCountLabel}
+            </span>
+            <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-2">
+              <Code2 size={16} className="text-amber-700" />
+              {techCountLabel}
+            </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-2">
               <FolderKanban size={16} className="text-amber-700" />
               {projectCountLabel}
@@ -374,6 +906,362 @@ export default function PortfolioAdminApp() {
           </div>
         ) : (
           <div className="mt-8 space-y-8">
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Branding, Copy & SEO</p>
+                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Atur nama brand, judul tab, label menu, copy section, dan teks penting lainnya</h2>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <Field label="Brand name">
+                  <input value={siteContent.brandName} onChange={(event) => updateSiteContent({ brandName: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Brand badge kecil">
+                  <input value={siteContent.brandBadge} onChange={(event) => updateSiteContent({ brandBadge: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="CTA navbar">
+                  <input value={siteContent.navigation.cta} onChange={(event) => updateSiteContentSection('navigation', { cta: event.target.value })} className={textInputClass} />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-3 xl:grid-cols-6">
+                <Field label="Menu perjalanan">
+                  <input value={siteContent.navigation.journey} onChange={(event) => updateSiteContentSection('navigation', { journey: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Menu pengalaman">
+                  <input value={siteContent.navigation.experience} onChange={(event) => updateSiteContentSection('navigation', { experience: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Menu karya">
+                  <input value={siteContent.navigation.projects} onChange={(event) => updateSiteContentSection('navigation', { projects: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Menu sertifikat">
+                  <input value={siteContent.navigation.certificates} onChange={(event) => updateSiteContentSection('navigation', { certificates: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Menu kontak">
+                  <input value={siteContent.navigation.contact} onChange={(event) => updateSiteContentSection('navigation', { contact: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Label hero card">
+                  <input value={siteContent.hero.cardLabel} onChange={(event) => updateSiteContentSection('hero', { cardLabel: event.target.value })} className={textInputClass} />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+                <Field label="Sapaan hero">
+                  <input value={siteContent.hero.greeting} onChange={(event) => updateSiteContentSection('hero', { greeting: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="CTA hero utama">
+                  <input value={siteContent.hero.primaryCtaLabel} onChange={(event) => updateSiteContentSection('hero', { primaryCtaLabel: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="CTA hero kedua">
+                  <input value={siteContent.hero.secondaryCtaLabel} onChange={(event) => updateSiteContentSection('hero', { secondaryCtaLabel: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Badge availability">
+                  <input value={siteContent.hero.availabilityLabel} onChange={(event) => updateSiteContentSection('hero', { availabilityLabel: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Label preview sertifikat">
+                  <input value={siteContent.certificates.previewLabel} onChange={(event) => updateSiteContentSection('certificates', { previewLabel: event.target.value })} className={textInputClass} />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <Field label="Eyebrow perjalanan">
+                  <input value={siteContent.journey.eyebrow} onChange={(event) => updateSiteContentSection('journey', { eyebrow: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Eyebrow pengalaman">
+                  <input value={siteContent.experience.eyebrow} onChange={(event) => updateSiteContentSection('experience', { eyebrow: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Eyebrow tech stack">
+                  <input value={siteContent.tech.eyebrow} onChange={(event) => updateSiteContentSection('tech', { eyebrow: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Eyebrow karya">
+                  <input value={siteContent.projects.eyebrow} onChange={(event) => updateSiteContentSection('projects', { eyebrow: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Eyebrow sertifikat">
+                  <input value={siteContent.certificates.eyebrow} onChange={(event) => updateSiteContentSection('certificates', { eyebrow: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Eyebrow kontak">
+                  <input value={siteContent.contact.eyebrow} onChange={(event) => updateSiteContentSection('contact', { eyebrow: event.target.value })} className={textInputClass} />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 xl:grid-cols-2">
+                <Field label="Judul perjalanan">
+                  <textarea value={siteContent.journey.title} onChange={(event) => updateSiteContentSection('journey', { title: event.target.value })} rows={3} className={textInputClass} />
+                </Field>
+                <Field label="Judul pengalaman">
+                  <textarea value={siteContent.experience.title} onChange={(event) => updateSiteContentSection('experience', { title: event.target.value })} rows={3} className={textInputClass} />
+                </Field>
+                <Field label="Judul tech stack">
+                  <textarea value={siteContent.tech.title} onChange={(event) => updateSiteContentSection('tech', { title: event.target.value })} rows={3} className={textInputClass} />
+                </Field>
+                <Field label="Judul karya">
+                  <textarea value={siteContent.projects.title} onChange={(event) => updateSiteContentSection('projects', { title: event.target.value })} rows={3} className={textInputClass} />
+                </Field>
+                <Field label="Judul sertifikat">
+                  <textarea value={siteContent.certificates.title} onChange={(event) => updateSiteContentSection('certificates', { title: event.target.value })} rows={3} className={textInputClass} />
+                </Field>
+                <Field label="Judul kontak">
+                  <textarea value={siteContent.contact.title} onChange={(event) => updateSiteContentSection('contact', { title: event.target.value })} rows={3} className={textInputClass} />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                <Field label="Label fokus">
+                  <input value={siteContent.highlights.focusLabel} onChange={(event) => updateSiteContentSection('highlights', { focusLabel: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Isi fokus">
+                  <input value={siteContent.highlights.focusText} onChange={(event) => updateSiteContentSection('highlights', { focusText: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Label cara kerja">
+                  <input value={siteContent.highlights.workStyleLabel} onChange={(event) => updateSiteContentSection('highlights', { workStyleLabel: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Isi cara kerja">
+                  <input value={siteContent.highlights.workStyleText} onChange={(event) => updateSiteContentSection('highlights', { workStyleText: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Aksen kontak">
+                  <input value={siteContent.contact.accent} onChange={(event) => updateSiteContentSection('contact', { accent: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Catatan footer">
+                  <input value={siteContent.contact.footerNote} onChange={(event) => updateSiteContentSection('contact', { footerNote: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Tombol buka sertifikat">
+                  <input value={siteContent.certificates.openLabel} onChange={(event) => updateSiteContentSection('certificates', { openLabel: event.target.value })} className={textInputClass} />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+                <Field label="SEO title" hint="Akan menjadi judul tab/browser dan title utama halaman publik.">
+                  <input value={siteContent.seo.title} onChange={(event) => updateSiteContentSection('seo', { title: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="SEO description" hint="Dipakai untuk meta description halaman publik.">
+                  <textarea value={siteContent.seo.description} onChange={(event) => updateSiteContentSection('seo', { description: event.target.value })} rows={4} className={textInputClass} />
+                </Field>
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Profil & Hero</p>
+                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Atur nama, foto, kontak, dan copy utama website</h2>
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-3">
+                <Field label="Nama">
+                  <input value={profile.name} onChange={(event) => updateProfile({ name: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Title utama">
+                  <input value={profile.title} onChange={(event) => updateProfile({ title: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Subtitle">
+                  <input value={profile.subtitle} onChange={(event) => updateProfile({ subtitle: event.target.value })} className={textInputClass} />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-4">
+                <Field label="Status">
+                  <input value={profile.status} onChange={(event) => updateProfile({ status: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Lokasi">
+                  <input value={profile.location} onChange={(event) => updateProfile({ location: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="Email">
+                  <input value={profile.email} onChange={(event) => updateProfile({ email: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="WhatsApp / Telepon">
+                  <input value={profile.phone} onChange={(event) => updateProfile({ phone: event.target.value })} className={textInputClass} />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <Field label="URL / path foto profil" hint="Contoh: /profile.jpeg atau URL Blob publik.">
+                  <input value={profile.image} onChange={(event) => updateProfile({ image: event.target.value })} className={textInputClass} />
+                </Field>
+                <Field label="GitHub URL">
+                  <input value={profile.social.github} onChange={(event) => updateProfileSocial('github', event.target.value)} className={textInputClass} placeholder="https://github.com/..." />
+                </Field>
+                <Field label="Instagram URL">
+                  <input value={profile.social.instagram} onChange={(event) => updateProfileSocial('instagram', event.target.value)} className={textInputClass} placeholder="https://instagram.com/..." />
+                </Field>
+              </div>
+
+              <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)]">
+                <Field label="Deskripsi utama" hint="Dipakai di hero section dan memberi konteks profesional tentang Anda.">
+                  <textarea value={profile.description} onChange={(event) => updateProfile({ description: event.target.value })} rows={7} className={textInputClass} />
+                </Field>
+
+                <div className="rounded-[1.75rem] border border-stone-200 bg-stone-50 p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Preview foto</p>
+                  <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-stone-200 bg-white">
+                    <img src={profile.image || '/profile.jpeg'} alt={profile.name || 'Profile'} className="h-64 w-full object-cover" />
+                  </div>
+                  <div className="mt-4 text-sm text-stone-600">
+                    Foto ini akan dipakai di hero dengan ukuran yang lebih proporsional daripada sebelumnya.
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Hero Stats</p>
+                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Atur angka dan label hero, termasuk menghapus klien atau label lain yang tidak Anda mau</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={addHeroStat}
+                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-semibold text-stone-800 transition hover:bg-white"
+                >
+                  <Plus size={16} />
+                  Tambah hero stat
+                </button>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {heroStats.map((item, index) => (
+                  <article key={item.id} className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5">
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{item.id}</p>
+                        <h3 className="mt-2 text-lg font-semibold text-stone-900">Stat #{index + 1}</h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeHeroStat(index)}
+                        className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-50"
+                      >
+                        <Trash2 size={12} />
+                        Hapus
+                      </button>
+                    </div>
+
+                    <div className="grid gap-4">
+                      <Field label="Nilai angka / teks">
+                        <input value={item.value} onChange={(event) => updateHeroStat(index, { value: event.target.value })} className={textInputClass} placeholder="50+" />
+                      </Field>
+                      <Field label="Label">
+                        <input value={item.label} onChange={(event) => updateHeroStat(index, { label: event.target.value })} className={textInputClass} placeholder="Proyek selesai" />
+                      </Field>
+                      <label className="inline-flex items-center gap-3 rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-700">
+                        <input type="checkbox" checked={item.visible !== false} onChange={(event) => updateHeroStat(index, { visible: event.target.checked })} />
+                        Tampilkan di hero
+                      </label>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Pengalaman & Catatan</p>
+                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Kelola semua pengalaman yang tampil di journey dan section pengalaman</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={addJourneyItem}
+                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-semibold text-stone-800 transition hover:bg-white"
+                >
+                  <Plus size={16} />
+                  Tambah pengalaman
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                {journey.map((item, index) => (
+                  <article key={item.id} className="rounded-[1.75rem] border border-stone-200 bg-stone-50 p-5 md:p-6">
+                    <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{item.id}</p>
+                        <h3 className="mt-2 text-xl font-semibold text-stone-900">Catatan pengalaman #{index + 1}</h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeJourneyItem(index)}
+                        className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                      >
+                        <Trash2 size={14} />
+                        Hapus
+                      </button>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-3">
+                      <Field label="Periode / tahun">
+                        <input value={item.year} onChange={(event) => updateJourneyItem(index, { year: event.target.value })} className={textInputClass} />
+                      </Field>
+                      <Field label="Peran / jabatan">
+                        <input value={item.title} onChange={(event) => updateJourneyItem(index, { title: event.target.value })} className={textInputClass} />
+                      </Field>
+                      <Field label="Tempat / perusahaan">
+                        <input value={item.place} onChange={(event) => updateJourneyItem(index, { place: event.target.value })} className={textInputClass} />
+                      </Field>
+                    </div>
+
+                    <div className="mt-4">
+                      <Field label="Catatan pengalaman">
+                        <textarea value={item.description} onChange={(event) => updateJourneyItem(index, { description: event.target.value })} rows={5} className={textInputClass} />
+                      </Field>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Tech Stack</p>
+                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Kembalikan, beri logo, dan ubah tech stack lama Anda kapan saja</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={addTechItem}
+                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-semibold text-stone-800 transition hover:bg-white"
+                >
+                  <Plus size={16} />
+                  Tambah tech stack
+                </button>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {techStack.map((item, index) => (
+                  <article key={item.id} className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5">
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{item.id}</p>
+                        <h3 className="mt-2 text-lg font-semibold text-stone-900">Tech #{index + 1}</h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeTechItem(index)}
+                        className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-50"
+                      >
+                        <Trash2 size={12} />
+                        Hapus
+                      </button>
+                    </div>
+
+                    <div className="grid gap-4">
+                      <Field label="Nama teknologi">
+                        <input value={item.name} onChange={(event) => updateTechItem(index, { name: event.target.value })} className={textInputClass} />
+                      </Field>
+                      <Field label="Level / label">
+                        <input value={item.level} onChange={(event) => updateTechItem(index, { level: event.target.value })} className={textInputClass} placeholder="Mahir" />
+                      </Field>
+                      <Field label="Icon / logo key" hint="Contoh: React.js, Next.js, Laravel, Node.js, MongoDB, MySQL, Tailwind CSS, JavaScript, PHP, Git, AI, Automation.">
+                        <input value={item.icon} onChange={(event) => updateTechItem(index, { icon: event.target.value })} className={textInputClass} placeholder="React.js" />
+                      </Field>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
             <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <div>
@@ -414,28 +1302,28 @@ export default function PortfolioAdminApp() {
 
                       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         <Field label="Judul project">
-                          <input value={project.title} onChange={(event) => updateProject(index, { title: event.target.value })} className={textInputClass()} />
+                          <input value={project.title} onChange={(event) => updateProject(index, { title: event.target.value })} className={textInputClass} />
                         </Field>
                         <Field label="Label kecil" hint="Akan tampil di bagian atas kartu, misalnya Client Project atau 7 hari.">
-                          <input value={project.date} onChange={(event) => updateProject(index, { date: event.target.value })} className={textInputClass()} />
+                          <input value={project.date} onChange={(event) => updateProject(index, { date: event.target.value })} className={textInputClass} />
                         </Field>
                         <Field label="Link tujuan" hint="Demo live, GitHub, atau URL portfolio terkait.">
-                          <input value={project.link} onChange={(event) => updateProject(index, { link: event.target.value })} className={textInputClass()} placeholder="https://..." />
+                          <input value={project.link} onChange={(event) => updateProject(index, { link: event.target.value })} className={textInputClass} placeholder="https://..." />
                         </Field>
                       </div>
 
                       <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <Field label="URL gambar / preview">
-                          <input value={project.image} onChange={(event) => updateProject(index, { image: event.target.value })} className={textInputClass()} placeholder="https://... atau URL Blob" />
+                          <input value={project.image} onChange={(event) => updateProject(index, { image: event.target.value })} className={textInputClass} placeholder="https://... atau URL Blob" />
                         </Field>
                         <Field label="URL sumber file" hint="Tempel URL gambar dari website lain, lalu klik Simpan ke Blob.">
-                          <input value={project.sourceAssetUrl} onChange={(event) => updateProject(index, { sourceAssetUrl: event.target.value })} className={textInputClass()} placeholder="https://example.com/image.png" />
+                          <input value={project.sourceAssetUrl} onChange={(event) => updateProject(index, { sourceAssetUrl: event.target.value })} className={textInputClass} placeholder="https://example.com/image.png" />
                         </Field>
                       </div>
 
                       <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
                         <Field label="Nama file Blob" hint="Opsional, dipakai sebagai nama dasar file di Blob.">
-                          <input value={project.filenameHint} onChange={(event) => updateProject(index, { filenameHint: event.target.value })} className={textInputClass()} placeholder="misal: eoffice-cover" />
+                          <input value={project.filenameHint} onChange={(event) => updateProject(index, { filenameHint: event.target.value })} className={textInputClass} placeholder="misal: eoffice-cover" />
                         </Field>
                         <button
                           type="button"
@@ -450,10 +1338,10 @@ export default function PortfolioAdminApp() {
 
                       <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
                         <Field label="Deskripsi">
-                          <textarea value={project.description} onChange={(event) => updateProject(index, { description: event.target.value })} rows={5} className={textInputClass()} />
+                          <textarea value={project.description} onChange={(event) => updateProject(index, { description: event.target.value })} rows={5} className={textInputClass} />
                         </Field>
                         <Field label="Tag project" hint="Satu item per baris atau pisahkan dengan koma.">
-                          <textarea value={project.tags.join('\n')} onChange={(event) => updateProject(index, { tags: parseLines(event.target.value) })} rows={5} className={textInputClass()} />
+                          <textarea value={project.tags.join('\n')} onChange={(event) => updateProject(index, { tags: parseLines(event.target.value) })} rows={5} className={textInputClass} />
                         </Field>
                       </div>
 
@@ -510,30 +1398,33 @@ export default function PortfolioAdminApp() {
                         </button>
                       </div>
 
-                      <div className="grid gap-4 md:grid-cols-3">
+                      <div className="grid gap-4 md:grid-cols-4">
                         <Field label="Judul certificate">
-                          <input value={certificate.title} onChange={(event) => updateCertificate(index, { title: event.target.value })} className={textInputClass()} />
+                          <input value={certificate.title} onChange={(event) => updateCertificate(index, { title: event.target.value })} className={textInputClass} />
                         </Field>
                         <Field label="Issuer">
-                          <input value={certificate.issuer} onChange={(event) => updateCertificate(index, { issuer: event.target.value })} className={textInputClass()} />
+                          <input value={certificate.issuer} onChange={(event) => updateCertificate(index, { issuer: event.target.value })} className={textInputClass} />
                         </Field>
                         <Field label="Tanggal / tahun">
-                          <input value={certificate.date} onChange={(event) => updateCertificate(index, { date: event.target.value })} className={textInputClass()} placeholder="2026" />
+                          <input value={certificate.date} onChange={(event) => updateCertificate(index, { date: event.target.value })} className={textInputClass} placeholder="2026" />
+                        </Field>
+                        <Field label="Credential / label">
+                          <input value={certificate.credential} onChange={(event) => updateCertificate(index, { credential: event.target.value })} className={textInputClass} placeholder="Verified" />
                         </Field>
                       </div>
 
                       <div className="mt-4 grid gap-4 md:grid-cols-2">
                         <Field label="URL file certificate" hint="Bisa PDF atau gambar. Link ini dipakai di website publik.">
-                          <input value={certificate.image} onChange={(event) => updateCertificate(index, { image: event.target.value })} className={textInputClass()} placeholder="https://... atau URL Blob" />
+                          <input value={certificate.image} onChange={(event) => updateCertificate(index, { image: event.target.value })} className={textInputClass} placeholder="https://... atau URL Blob" />
                         </Field>
                         <Field label="URL sumber file" hint="Tempel URL PDF atau gambar lalu klik Simpan ke Blob.">
-                          <input value={certificate.sourceAssetUrl} onChange={(event) => updateCertificate(index, { sourceAssetUrl: event.target.value })} className={textInputClass()} placeholder="https://example.com/certificate.pdf" />
+                          <input value={certificate.sourceAssetUrl} onChange={(event) => updateCertificate(index, { sourceAssetUrl: event.target.value })} className={textInputClass} placeholder="https://example.com/certificate.pdf" />
                         </Field>
                       </div>
 
                       <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
                         <Field label="Nama file Blob" hint="Opsional, dipakai sebagai nama dasar file di Blob.">
-                          <input value={certificate.filenameHint} onChange={(event) => updateCertificate(index, { filenameHint: event.target.value })} className={textInputClass()} placeholder="misal: nextjs-dashboard-certificate" />
+                          <input value={certificate.filenameHint} onChange={(event) => updateCertificate(index, { filenameHint: event.target.value })} className={textInputClass} placeholder="misal: nextjs-dashboard-certificate" />
                         </Field>
                         <button
                           type="button"
@@ -565,8 +1456,8 @@ export default function PortfolioAdminApp() {
 
             <section className="rounded-[2rem] border border-dashed border-stone-300 bg-white/70 p-6 text-sm leading-7 text-stone-600">
               <p className="font-semibold text-stone-900">Environment yang perlu disiapkan di Vercel</p>
-              <p className="mt-2">Set salah satu kredensial Blob yang didukung Vercel, yaitu `BLOB_READ_WRITE_TOKEN` atau koneksi store via OIDC, lalu tambahkan `PORTFOLIO_ADMIN_TOKEN` untuk mengamankan write API.</p>
-              <p className="mt-2">Website publik tetap memakai fallback data lokal, jadi halaman tidak langsung kosong walau Blob belum terhubung.</p>
+              <p className="mt-2">Set salah satu kredensial Blob yang didukung Vercel, yaitu BLOB_READ_WRITE_TOKEN atau koneksi store via OIDC, lalu tambahkan PORTFOLIO_ADMIN_TOKEN untuk mengamankan write API.</p>
+              <p className="mt-2">Data publik sekarang mencakup profile, siteContent, heroStats, journey, tech stack, projects, dan certificates dari storage yang sama.</p>
             </section>
           </div>
         )}

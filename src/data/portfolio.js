@@ -1,9 +1,9 @@
 export const profile = {
-  name: "Rifki",
-  title: "Fullstack Web Developer",
-  subtitle: "React.js | Next.js | Laravel | Node.js",
+  name: "Rifki Nur Fahrezi Ahmad",
+  title: "Fullstack Developer, AI Builder, dan Digital Problem Solver",
+  subtitle: "Website | Dashboard | Automation | AI Tools | Sistem Informasi",
   description:
-    "Seorang Fullstack Web Developer yang passionate dalam membangun aplikasi web modern. Berpengalaman mengembangkan website, dashboard, dan sistem informasi menggunakan teknologi terkini.",
+    "Saya membantu membangun website, dashboard, sistem informasi, automation workflow, dan solusi berbasis AI yang terasa rapi di frontend, stabil di backend, dan benar-benar berguna setelah rilis.",
   status: "Mahasiswa S1 Informatika",
   location: "Indonesia",
   email: "rifkifka@gmail.com",
@@ -12,11 +12,91 @@ export const profile = {
     github: "https://github.com/RifkiFahrezi86",
     instagram: "https://www.instagram.com/rifki_ahmadfahrezi/",
   },
-  stats: {
-    projects: "50+",
-    clients: "30+",
-    rating: "4.9/5",
-    experience: "2+",
+};
+
+export const heroStats = [
+  {
+    id: "projects",
+    value: "50+",
+    label: "Proyek selesai",
+    visible: true,
+  },
+  {
+    id: "systems",
+    value: "20+",
+    label: "Sistem & dashboard",
+    visible: true,
+  },
+  {
+    id: "automation",
+    value: "12+",
+    label: "Workflow AI & automasi",
+    visible: true,
+  },
+  {
+    id: "experience",
+    value: "2+",
+    label: "Tahun pengalaman",
+    visible: true,
+  },
+];
+
+export const siteContent = {
+  brandName: "Rifki Nur Fahrezi Ahmad",
+  brandBadge: "Open for web, AI, dan automation projects",
+  navigation: {
+    journey: "Perjalanan",
+    experience: "Pengalaman",
+    projects: "Karya",
+    certificates: "Sertifikat",
+    contact: "Kontak",
+    cta: "Sapa Saya",
+  },
+  hero: {
+    greeting: "Halo, saya",
+    primaryCtaLabel: "Lihat Karya",
+    secondaryCtaLabel: "Hubungi Saya",
+    availabilityLabel: "Tersedia untuk proyek baru",
+    cardLabel: "Web, AI, & Digital Systems",
+  },
+  journey: {
+    eyebrow: "— Perjalanan",
+    title: "Rangkaian pengalaman yang membentuk cara saya membangun solusi digital.",
+  },
+  experience: {
+    eyebrow: "— Pengalaman",
+    title: "Saya membangun website, dashboard, automation, dan workflow AI yang benar-benar dipakai.",
+  },
+  tech: {
+    eyebrow: "— Tech Stack",
+    title: "Stack kerja untuk frontend, backend, database, deployment, dan automasi AI.",
+  },
+  highlights: {
+    focusLabel: "Fokus",
+    focusText: "Website, dashboard, AI workflow, dan sistem informasi",
+    workStyleLabel: "Cara kerja",
+    workStyleText: "Cepat, rapi, strategis, dan tetap mudah dirawat setelah rilis",
+  },
+  projects: {
+    eyebrow: "— Karya",
+    title: "Pilihan proyek dari arsip kerja dan eksperimen yang saya bangun.",
+  },
+  certificates: {
+    eyebrow: "— Sertifikat",
+    title: "Bukti belajar, eksplorasi, dan peningkatan skill yang terus berjalan.",
+    previewLabel: "Lihat credential",
+    openLabel: "Buka sertifikat",
+  },
+  contact: {
+    eyebrow: "— Kontak",
+    title: "Punya ide, revisi, atau proyek baru?",
+    accent: "Mari kita bahas langsung.",
+    footerNote: "Dibuat dengan detail dan standar kerja profesional.",
+  },
+  seo: {
+    title: "Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions",
+    description:
+      "Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.",
   },
 };
 
@@ -59,20 +139,23 @@ export const experiences = [
 ];
 
 export const techStack = [
-  { name: "React.js", level: "Mahir" },
-  { name: "Next.js", level: "Mahir" },
-  { name: "Laravel", level: "Mahir" },
-  { name: "Node.js", level: "Mahir" },
-  { name: "Express.js", level: "Mahir" },
-  { name: "MongoDB", level: "Mahir" },
-  { name: "MySQL", level: "Mahir" },
-  { name: "Tailwind CSS", level: "Mahir" },
-  { name: "JavaScript", level: "Mahir" },
-  { name: "PHP", level: "Mahir" },
-  { name: "REST API", level: "Mahir" },
-  { name: "HTML5", level: "Mahir" },
-  { name: "CSS3", level: "Mahir" },
-  { name: "Git", level: "Mahir" },
+  { name: "React.js", level: "Mahir", icon: "React.js" },
+  { name: "Next.js", level: "Mahir", icon: "Next.js" },
+  { name: "Laravel", level: "Mahir", icon: "Laravel" },
+  { name: "Node.js", level: "Mahir", icon: "Node.js" },
+  { name: "Express.js", level: "Mahir", icon: "Express.js" },
+  { name: "MongoDB", level: "Mahir", icon: "MongoDB" },
+  { name: "MySQL", level: "Mahir", icon: "MySQL" },
+  { name: "Tailwind CSS", level: "Mahir", icon: "Tailwind CSS" },
+  { name: "JavaScript", level: "Mahir", icon: "JavaScript" },
+  { name: "PHP", level: "Mahir", icon: "PHP" },
+  { name: "REST API", level: "Mahir", icon: "REST API" },
+  { name: "HTML5", level: "Mahir", icon: "HTML5" },
+  { name: "CSS3", level: "Mahir", icon: "CSS3" },
+  { name: "Git", level: "Mahir", icon: "Git" },
+  { name: "Python", level: "Menengah", icon: "Automation" },
+  { name: "AI Automation", level: "Menengah", icon: "AI" },
+  { name: "OpenAI API", level: "Menengah", icon: "AI" },
 ];
 
 export const certificates = [

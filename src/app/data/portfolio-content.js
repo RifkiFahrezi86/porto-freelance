@@ -1,7 +1,11 @@
 import {
+  profile as legacyProfile,
+  heroStats as legacyHeroStats,
+  siteContent as legacySiteContent,
   certificates as legacyCertificates,
   experiences as legacyExperiences,
   projects as legacyProjects,
+  techStack as legacyTechStack,
 } from "../../data/portfolio.js";
 
 function slugify(value, fallback) {
@@ -26,6 +30,93 @@ function toProject(project, index) {
   };
 }
 
+function toProfile(profile) {
+  return {
+    name: profile.name,
+    title: profile.title,
+    subtitle: profile.subtitle,
+    description: profile.description,
+    status: profile.status,
+    location: profile.location,
+    email: profile.email,
+    phone: profile.phone,
+    image: profile.image || "/profile.jpeg",
+    social: {
+      github: profile.social?.github || "",
+      instagram: profile.social?.instagram || "",
+    },
+  };
+}
+
+function toHeroStat(item, index) {
+  return {
+    id: slugify(item.id || item.label, `hero-stat-${index + 1}`),
+    value: item.value || "",
+    label: item.label || "",
+    visible: item.visible !== false,
+  };
+}
+
+function toSiteContent(content) {
+  return {
+    brandName: content?.brandName || "Rifki Nur Fahrezi Ahmad",
+    brandBadge: content?.brandBadge || "Open for web, AI, dan automation projects",
+    navigation: {
+      journey: content?.navigation?.journey || "Perjalanan",
+      experience: content?.navigation?.experience || "Pengalaman",
+      projects: content?.navigation?.projects || "Karya",
+      certificates: content?.navigation?.certificates || "Sertifikat",
+      contact: content?.navigation?.contact || "Kontak",
+      cta: content?.navigation?.cta || "Sapa Saya",
+    },
+    hero: {
+      greeting: content?.hero?.greeting || "Halo, saya",
+      primaryCtaLabel: content?.hero?.primaryCtaLabel || "Lihat Karya",
+      secondaryCtaLabel: content?.hero?.secondaryCtaLabel || "Hubungi Saya",
+      availabilityLabel: content?.hero?.availabilityLabel || "Tersedia untuk proyek baru",
+      cardLabel: content?.hero?.cardLabel || "Web, AI, & Digital Systems",
+    },
+    journey: {
+      eyebrow: content?.journey?.eyebrow || "— Perjalanan",
+      title: content?.journey?.title || "Rangkaian pengalaman yang membentuk cara saya membangun solusi digital.",
+    },
+    experience: {
+      eyebrow: content?.experience?.eyebrow || "— Pengalaman",
+      title: content?.experience?.title || "Saya membangun website, dashboard, automation, dan workflow AI yang benar-benar dipakai.",
+    },
+    tech: {
+      eyebrow: content?.tech?.eyebrow || "— Tech Stack",
+      title: content?.tech?.title || "Stack kerja untuk frontend, backend, database, deployment, dan automasi AI.",
+    },
+    highlights: {
+      focusLabel: content?.highlights?.focusLabel || "Fokus",
+      focusText: content?.highlights?.focusText || "Website, dashboard, AI workflow, dan sistem informasi",
+      workStyleLabel: content?.highlights?.workStyleLabel || "Cara kerja",
+      workStyleText: content?.highlights?.workStyleText || "Cepat, rapi, strategis, dan tetap mudah dirawat setelah rilis",
+    },
+    projects: {
+      eyebrow: content?.projects?.eyebrow || "— Karya",
+      title: content?.projects?.title || "Pilihan proyek dari arsip kerja dan eksperimen yang saya bangun.",
+    },
+    certificates: {
+      eyebrow: content?.certificates?.eyebrow || "— Sertifikat",
+      title: content?.certificates?.title || "Bukti belajar, eksplorasi, dan peningkatan skill yang terus berjalan.",
+      previewLabel: content?.certificates?.previewLabel || "Lihat credential",
+      openLabel: content?.certificates?.openLabel || "Buka sertifikat",
+    },
+    contact: {
+      eyebrow: content?.contact?.eyebrow || "— Kontak",
+      title: content?.contact?.title || "Punya ide, revisi, atau proyek baru?",
+      accent: content?.contact?.accent || "Mari kita bahas langsung.",
+      footerNote: content?.contact?.footerNote || "Dibuat dengan detail dan standar kerja profesional.",
+    },
+    seo: {
+      title: content?.seo?.title || "Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions",
+      description: content?.seo?.description || "Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.",
+    },
+  };
+}
+
 function toCertificate(certificate, index) {
   return {
     id: slugify(certificate.title, `certificate-${index + 1}`),
@@ -33,6 +124,7 @@ function toCertificate(certificate, index) {
     issuer: certificate.issuer,
     date: certificate.date,
     image: certificate.image || "",
+    credential: certificate.credential || "",
   };
 }
 
@@ -46,7 +138,20 @@ function toJourney(item, index) {
   };
 }
 
+function toTechItem(item, index) {
+  return {
+    id: slugify(item.name, `tech-${index + 1}`),
+    name: item.name,
+    level: item.level || "Mahir",
+    icon: item.icon || item.name,
+  };
+}
+
 export const portfolioSeed = {
+  profile: toProfile(legacyProfile),
+  heroStats: (legacyHeroStats || []).map(toHeroStat),
+  siteContent: toSiteContent(legacySiteContent),
+  techStack: legacyTechStack.map(toTechItem),
   projects: legacyProjects.map(toProject),
   certificates: legacyCertificates.map(toCertificate),
   journey: legacyExperiences.map(toJourney),
