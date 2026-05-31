@@ -23,6 +23,8 @@ const EXTENSION_BY_CONTENT_TYPE = {
   "image/webp": "webp",
 };
 
+const SAFE_UPLOAD_FOLDERS = new Set(["profile", "projects", "certificates"]);
+
 function slugify(value, fallback = "item") {
   return String(value || "")
     .normalize("NFKD")
@@ -342,6 +344,65 @@ function guessExtension(sourceUrl, contentType) {
   return "bin";
 }
 
+function guessExtensionFromFilename(filename, contentType) {
+  const cleanContentType = String(contentType || "").split(";")[0].trim().toLowerCase();
+  const byContentType = EXTENSION_BY_CONTENT_TYPE[cleanContentType];
+
+  if (byContentType) {
+    return byContentType;
+  }
+
+  const extname = path.extname(String(filename || "")).replace(/^\./, "").toLowerCase();
+  return extname || "bin";
+}
+
+function toSafeUploadFolder(folder) {
+  const safeFolder = String(folder || "projects").trim().toLowerCase();
+  return SAFE_UPLOAD_FOLDERS.has(safeFolder) ? safeFolder : "projects";
+}
+
+function validateUploadContentType(folder, contentType) {
+  const cleanContentType = String(contentType || "").split(";")[0].trim().toLowerCase();
+
+  if (!cleanContentType) {
+    throw new Error("Tipe file tidak dikenali.");
+  }
+
+  if (folder === "certificates") {
+    if (cleanContentType === "application/pdf" || cleanContentType.startsWith("image/")) {
+      return cleanContentType;
+    }
+
+    throw new Error("File sertifikat harus berupa PDF atau gambar.");
+  }
+
+  if (!cleanContentType.startsWith("image/")) {
+    throw new Error("File ini harus berupa gambar.");
+  }
+
+  return cleanContentType;
+}
+
+async function putAssetBody({ body, folder = "projects", filenameHint = "asset", extension = "bin", contentType }) {
+  const safeFolder = toSafeUploadFolder(folder);
+  const safeFilename = slugify(
+    filenameHint,
+    safeFolder === "profile"
+      ? "profile-image"
+      : safeFolder === "projects"
+        ? "project-image"
+        : "certificate-file",
+  );
+  const targetPath = `portfolio/${safeFolder}/${safeFilename}.${extension}`;
+
+  return put(targetPath, body, {
+    access: "public",
+    addRandomSuffix: true,
+    cacheControlMaxAge: 60 * 60 * 24 * 30,
+    contentType,
+  });
+}
+
 export async function importRemoteAsset({ sourceUrl, folder = "projects", filenameHint = "asset" }) {
   let parsedUrl;
 
@@ -370,21 +431,57 @@ export async function importRemoteAsset({ sourceUrl, folder = "projects", filena
     .trim()
     .toLowerCase();
 
-  if (!ALLOWED_CONTENT_TYPES.includes(contentType) && !contentType.startsWith("image/")) {
+  const safeFolder = toSafeUploadFolder(folder);
+  const validatedContentType = validateUploadContentType(safeFolder, contentType);
+
+  if (!ALLOWED_CONTENT_TYPES.includes(validatedContentType) && !validatedContentType.startsWith("image/")) {
     throw new Error("File dari URL harus berupa gambar atau PDF.");
   }
 
   const extension = guessExtension(sourceUrl, contentType);
-  const safeFolder = folder === "certificates" ? "certificates" : "projects";
-  const safeFilename = slugify(filenameHint, safeFolder === "projects" ? "project-image" : "certificate-file");
-  const targetPath = `portfolio/${safeFolder}/${safeFilename}.${extension}`;
-
   const body = await response.arrayBuffer();
 
-  return put(targetPath, body, {
-    access: "public",
-    addRandomSuffix: true,
-    cacheControlMaxAge: 60 * 60 * 24 * 30,
-    contentType,
+  return putAssetBody({
+    body,
+    folder: safeFolder,
+    filenameHint,
+    extension,
+    contentType: validatedContentType,
+  });
+}
+
+export async function uploadAsset({ fileBase64, originalFilename, contentType, folder = "projects", filenameHint = "asset" }) {
+  const safeFolder = toSafeUploadFolder(folder);
+  const validatedContentType = validateUploadContentType(safeFolder, contentType);
+
+  if (!ALLOWED_CONTENT_TYPES.includes(validatedContentType) && !validatedContentType.startsWith("image/")) {
+    throw new Error("File upload harus berupa gambar atau PDF.");
+  }
+
+  const base64 = String(fileBase64 || "").trim();
+  if (!base64) {
+    throw new Error("File upload kosong.");
+  }
+
+  let body;
+
+  try {
+    body = Buffer.from(base64, "base64");
+  } catch {
+    throw new Error("Format file upload tidak valid.");
+  }
+
+  if (!body.length) {
+    throw new Error("File upload kosong.");
+  }
+
+  const extension = guessExtensionFromFilename(originalFilename, validatedContentType);
+
+  return putAssetBody({
+    body,
+    folder: safeFolder,
+    filenameHint,
+    extension,
+    contentType: validatedContentType,
   });
 }

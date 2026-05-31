@@ -59,6 +59,54 @@ function isDocumentUrl(value) {
   return /\.pdf($|[?#])/i.test(String(value || ''))
 }
 
+function inferContentTypeFromFilename(filename) {
+  const lower = String(filename || '').trim().toLowerCase()
+
+  if (lower.endsWith('.pdf')) {
+    return 'application/pdf'
+  }
+
+  if (lower.endsWith('.png')) {
+    return 'image/png'
+  }
+
+  if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) {
+    return 'image/jpeg'
+  }
+
+  if (lower.endsWith('.gif')) {
+    return 'image/gif'
+  }
+
+  if (lower.endsWith('.svg')) {
+    return 'image/svg+xml'
+  }
+
+  if (lower.endsWith('.webp')) {
+    return 'image/webp'
+  }
+
+  return ''
+}
+
+function readFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      const result = String(reader.result || '')
+      const separatorIndex = result.indexOf(',')
+      resolve(separatorIndex >= 0 ? result.slice(separatorIndex + 1) : result)
+    }
+
+    reader.onerror = () => {
+      reject(new Error('Gagal membaca file upload.'))
+    }
+
+    reader.readAsDataURL(file)
+  })
+}
+
 function hydrateProfile(profile = {}) {
   const social = profile.social && typeof profile.social === 'object' ? profile.social : {}
   const seed = portfolioSeed.profile || {}
@@ -348,11 +396,80 @@ function emptyCertificate() {
 
 function Field({ label, children, hint }) {
   return (
-    <label className="block space-y-2">
+    <div className="block space-y-2">
       <span className="block text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">{label}</span>
       {children}
       {hint ? <span className="block text-xs text-stone-400">{hint}</span> : null}
-    </label>
+    </div>
+  )
+}
+
+function AssetDropzone({ label, hint, accept, loading = false, currentUrl = '', onFileSelected }) {
+  const [isDragging, setIsDragging] = useState(false)
+  const supportsPdf = String(accept || '').toLowerCase().includes('pdf')
+
+  async function handleFileList(fileList) {
+    const [file] = Array.from(fileList || [])
+
+    if (!file || loading) {
+      return
+    }
+
+    await onFileSelected?.(file)
+  }
+
+  return (
+    <Field label={label} hint={hint}>
+      <label
+        className={`flex min-h-[196px] w-full cursor-pointer flex-col items-center justify-center gap-3 rounded-[1.5rem] border border-dashed px-5 py-6 text-center transition ${isDragging ? 'border-amber-400 bg-amber-50' : 'border-stone-300 bg-white hover:border-amber-300 hover:bg-amber-50/40'} ${loading ? 'cursor-wait opacity-70' : ''}`}
+        onDragOver={(event) => {
+          event.preventDefault()
+          if (!loading) {
+            setIsDragging(true)
+          }
+        }}
+        onDragEnter={(event) => {
+          event.preventDefault()
+          if (!loading) {
+            setIsDragging(true)
+          }
+        }}
+        onDragLeave={(event) => {
+          if (event.currentTarget.contains(event.relatedTarget)) {
+            return
+          }
+
+          setIsDragging(false)
+        }}
+        onDrop={(event) => {
+          event.preventDefault()
+          setIsDragging(false)
+          void handleFileList(event.dataTransfer.files)
+        }}
+      >
+        <input
+          type="file"
+          accept={accept}
+          className="hidden"
+          disabled={loading}
+          onChange={(event) => {
+            void handleFileList(event.target.files)
+            event.target.value = ''
+          }}
+        />
+
+        {loading ? <LoaderCircle size={24} className="animate-spin text-amber-700" /> : <UploadCloud size={24} className="text-amber-700" />}
+
+        <div>
+          <p className="text-sm font-semibold text-stone-900">{loading ? 'Mengupload file ke Blob...' : 'Tarik file ke sini atau klik untuk memilih'}</p>
+          <p className="mt-1 text-xs text-stone-500">{supportsPdf ? 'Mendukung gambar dan PDF.' : 'Mendukung file gambar.'}</p>
+        </div>
+
+        <div className="w-full rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 text-left text-xs text-stone-500 break-all">
+          {currentUrl || 'Belum ada file tersimpan.'}
+        </div>
+      </label>
+    </Field>
   )
 }
 
@@ -630,25 +747,22 @@ export default function PortfolioAdminApp() {
     touch()
   }
 
-  async function importAsset(kind, index) {
+  async function uploadAssetFile({ file, folder, filenameHint, requestKey, onSuccess, successText }) {
     if (!authToken.trim()) {
-      setNotice({ tone: 'error', text: 'Login admin diperlukan sebelum mengimpor file ke Vercel Blob.' })
+      setNotice({ tone: 'error', text: 'Login admin diperlukan sebelum mengupload file ke Vercel Blob.' })
       return
     }
 
-    const item = kind === 'project' ? projects[index] : certificates[index]
-    const sourceUrl = item?.sourceAssetUrl?.trim()
-
-    if (!sourceUrl) {
-      setNotice({ tone: 'error', text: 'Isi URL sumber file yang ingin Anda simpan ke Blob.' })
+    if (!file) {
+      setNotice({ tone: 'error', text: 'Pilih file yang ingin diupload.' })
       return
     }
 
-    const requestKey = `${kind}-${index}`
     setImportingKey(requestKey)
     setNotice(null)
 
     try {
+      const fileBase64 = await readFileAsBase64(file)
       const response = await fetch('/api/portfolio/media', {
         method: 'POST',
         headers: {
@@ -656,30 +770,64 @@ export default function PortfolioAdminApp() {
           'x-admin-token': authToken.trim(),
         },
         body: JSON.stringify({
-          sourceUrl,
-          folder: kind === 'project' ? 'projects' : 'certificates',
-          filenameHint: item.filenameHint || item.title || kind,
+          fileBase64,
+          originalFilename: file.name,
+          contentType: file.type || inferContentTypeFromFilename(file.name),
+          folder,
+          filenameHint: String(filenameHint || file.name.replace(/\.[^/.]+$/, '') || folder).trim(),
         }),
       })
 
       const payload = await response.json()
       if (!response.ok) {
-        throw new Error(payload.error || 'Gagal memindahkan file ke Blob.')
+        throw new Error(payload.error || 'Gagal mengupload file ke Blob.')
       }
 
-      if (kind === 'project') {
-        updateProject(index, { image: payload.url, sourceAssetUrl: '', filenameHint: '' })
-      } else {
-        updateCertificate(index, { image: payload.url, sourceAssetUrl: '', filenameHint: '' })
-      }
-
-      setNotice({ tone: 'success', text: 'File berhasil disalin dari URL eksternal ke Vercel Blob.' })
+      onSuccess?.(payload.url)
+      setNotice({ tone: 'success', text: `${successText} File tersimpan di Vercel Blob. Klik simpan semua untuk memperbarui data portfolio.` })
     } catch (error) {
       console.error(error)
-      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Gagal memindahkan file ke Blob.' })
+      setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Gagal mengupload file ke Blob.' })
     } finally {
       setImportingKey('')
     }
+  }
+
+  async function uploadProfileImage(file) {
+    await uploadAssetFile({
+      file,
+      folder: 'profile',
+      filenameHint: profile.name || 'profile-image',
+      requestKey: 'profile-image',
+      onSuccess: (url) => updateProfile({ image: url }),
+      successText: 'Foto profil berhasil diupload.',
+    })
+  }
+
+  async function uploadProjectImage(index, file) {
+    const project = projects[index]
+
+    await uploadAssetFile({
+      file,
+      folder: 'projects',
+      filenameHint: project?.filenameHint || project?.title || 'project-image',
+      requestKey: `project-${index}`,
+      onSuccess: (url) => updateProject(index, { image: url, sourceAssetUrl: '' }),
+      successText: 'Gambar project berhasil diupload.',
+    })
+  }
+
+  async function uploadCertificateAsset(index, file) {
+    const certificate = certificates[index]
+
+    await uploadAssetFile({
+      file,
+      folder: 'certificates',
+      filenameHint: certificate?.filenameHint || certificate?.title || 'certificate-file',
+      requestKey: `certificate-${index}`,
+      onSuccess: (url) => updateCertificate(index, { image: url, sourceAssetUrl: '' }),
+      successText: 'File sertifikat berhasil diupload.',
+    })
   }
 
   async function savePortfolio() {
@@ -1108,10 +1256,15 @@ export default function PortfolioAdminApp() {
                 </Field>
               </div>
 
-              <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <Field label="URL / path foto profil" hint="Contoh: /profile.jpeg atau URL Blob publik.">
-                  <input value={profile.image} onChange={(event) => updateProfile({ image: event.target.value })} className={textInputClass} />
-                </Field>
+              <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_minmax(0,1fr)]">
+                <AssetDropzone
+                  label="Upload foto profil"
+                  hint="Tarik gambar langsung ke sini. File akan diupload ke Blob dan URL-nya diisi otomatis."
+                  accept="image/*"
+                  loading={importingKey === 'profile-image'}
+                  currentUrl={profile.image}
+                  onFileSelected={uploadProfileImage}
+                />
                 <Field label="GitHub URL">
                   <input value={profile.social.github} onChange={(event) => updateProfileSocial('github', event.target.value)} className={textInputClass} placeholder="https://github.com/..." />
                 </Field>
@@ -1344,28 +1497,18 @@ export default function PortfolioAdminApp() {
                         </Field>
                       </div>
 
-                      <div className="mt-4 grid gap-4 md:grid-cols-2">
-                        <Field label="URL gambar / preview">
-                          <input value={project.image} onChange={(event) => updateProject(index, { image: event.target.value })} className={textInputClass} placeholder="https://... atau URL Blob" />
-                        </Field>
-                        <Field label="URL sumber file" hint="Tempel URL gambar dari website lain, lalu klik Simpan ke Blob.">
-                          <input value={project.sourceAssetUrl} onChange={(event) => updateProject(index, { sourceAssetUrl: event.target.value })} className={textInputClass} placeholder="https://example.com/image.png" />
-                        </Field>
-                      </div>
-
-                      <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                        <AssetDropzone
+                          label="Upload gambar project"
+                          hint="Tarik gambar project atau klik area ini. Setelah upload, URL akan terisi otomatis."
+                          accept="image/*"
+                          loading={isImporting}
+                          currentUrl={project.image}
+                          onFileSelected={(file) => uploadProjectImage(index, file)}
+                        />
                         <Field label="Nama file Blob" hint="Opsional, dipakai sebagai nama dasar file di Blob.">
                           <input value={project.filenameHint} onChange={(event) => updateProject(index, { filenameHint: event.target.value })} className={textInputClass} placeholder="misal: eoffice-cover" />
                         </Field>
-                        <button
-                          type="button"
-                          onClick={() => importAsset('project', index)}
-                          disabled={isImporting}
-                          className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-stone-900 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {isImporting ? <LoaderCircle size={17} className="animate-spin" /> : <UploadCloud size={17} />}
-                          Simpan ke Blob
-                        </button>
                       </div>
 
                       <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
@@ -1445,28 +1588,18 @@ export default function PortfolioAdminApp() {
                         </Field>
                       </div>
 
-                      <div className="mt-4 grid gap-4 md:grid-cols-2">
-                        <Field label="URL file certificate" hint="Bisa PDF atau gambar. Link ini dipakai di website publik.">
-                          <input value={certificate.image} onChange={(event) => updateCertificate(index, { image: event.target.value })} className={textInputClass} placeholder="https://... atau URL Blob" />
-                        </Field>
-                        <Field label="URL sumber file" hint="Tempel URL PDF atau gambar lalu klik Simpan ke Blob.">
-                          <input value={certificate.sourceAssetUrl} onChange={(event) => updateCertificate(index, { sourceAssetUrl: event.target.value })} className={textInputClass} placeholder="https://example.com/certificate.pdf" />
-                        </Field>
-                      </div>
-
-                      <div className="mt-4 grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                        <AssetDropzone
+                          label="Upload file sertifikat"
+                          hint="Tarik PDF atau gambar sertifikat ke sini. File akan diupload ke Blob dan dipakai di website publik."
+                          accept="image/*,application/pdf,.pdf"
+                          loading={isImporting}
+                          currentUrl={certificate.image}
+                          onFileSelected={(file) => uploadCertificateAsset(index, file)}
+                        />
                         <Field label="Nama file Blob" hint="Opsional, dipakai sebagai nama dasar file di Blob.">
                           <input value={certificate.filenameHint} onChange={(event) => updateCertificate(index, { filenameHint: event.target.value })} className={textInputClass} placeholder="misal: nextjs-dashboard-certificate" />
                         </Field>
-                        <button
-                          type="button"
-                          onClick={() => importAsset('certificate', index)}
-                          disabled={isImporting}
-                          className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full bg-white px-5 text-sm font-semibold text-stone-900 transition hover:bg-stone-100 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {isImporting ? <LoaderCircle size={17} className="animate-spin" /> : <UploadCloud size={17} />}
-                          Simpan ke Blob
-                        </button>
                       </div>
 
                       {certificate.image ? (
