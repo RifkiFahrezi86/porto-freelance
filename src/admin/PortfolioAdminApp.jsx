@@ -20,12 +20,20 @@ import {
 } from 'lucide-react'
 import { portfolioSeed } from '../app/data/portfolio-content.js'
 
-function getStoredAdminToken() {
+function getStoredAdminSession() {
   if (typeof window === 'undefined') {
     return ''
   }
 
-  return sessionStorage.getItem('portfolio_admin_token') || ''
+  return sessionStorage.getItem('portfolio_admin_session') || sessionStorage.getItem('portfolio_admin_token') || ''
+}
+
+function getStoredAdminUsername() {
+  if (typeof window === 'undefined') {
+    return 'admin'
+  }
+
+  return sessionStorage.getItem('portfolio_admin_username') || 'admin'
 }
 
 function buildId(prefix) {
@@ -77,7 +85,7 @@ function hydrateSiteContent(content = {}) {
 
   return {
     brandName: content.brandName || seed.brandName || 'Rifki Nur Fahrezi Ahmad',
-    brandBadge: content.brandBadge || seed.brandBadge || 'Open for web, AI, dan automation projects',
+    brandBadge: content.brandBadge || seed.brandBadge || 'Open for AI engineering, websites, and automation',
     navigation: {
       journey: content.navigation?.journey || seed.navigation?.journey || 'Perjalanan',
       experience: content.navigation?.experience || seed.navigation?.experience || 'Pengalaman',
@@ -91,7 +99,7 @@ function hydrateSiteContent(content = {}) {
       primaryCtaLabel: content.hero?.primaryCtaLabel || seed.hero?.primaryCtaLabel || 'Lihat Karya',
       secondaryCtaLabel: content.hero?.secondaryCtaLabel || seed.hero?.secondaryCtaLabel || 'Hubungi Saya',
       availabilityLabel: content.hero?.availabilityLabel || seed.hero?.availabilityLabel || 'Tersedia untuk proyek baru',
-      cardLabel: content.hero?.cardLabel || seed.hero?.cardLabel || 'Web, AI, & Digital Systems',
+      cardLabel: content.hero?.cardLabel || seed.hero?.cardLabel || 'AI Engineer | Web & Automation',
     },
     journey: {
       eyebrow: content.journey?.eyebrow || seed.journey?.eyebrow || '— Perjalanan',
@@ -99,15 +107,15 @@ function hydrateSiteContent(content = {}) {
     },
     experience: {
       eyebrow: content.experience?.eyebrow || seed.experience?.eyebrow || '— Pengalaman',
-      title: content.experience?.title || seed.experience?.title || 'Saya membangun website, dashboard, automation, dan workflow AI yang benar-benar dipakai.',
+      title: content.experience?.title || seed.experience?.title || 'Saya membangun website, AI workflow, automation, dan internal tools yang benar-benar dipakai.',
     },
     tech: {
       eyebrow: content.tech?.eyebrow || seed.tech?.eyebrow || '— Tech Stack',
-      title: content.tech?.title || seed.tech?.title || 'Stack kerja untuk frontend, backend, database, deployment, dan automasi AI.',
+      title: content.tech?.title || seed.tech?.title || 'Stack untuk website modern, AI integration, backend systems, dan automation workflows.',
     },
     highlights: {
       focusLabel: content.highlights?.focusLabel || seed.highlights?.focusLabel || 'Fokus',
-      focusText: content.highlights?.focusText || seed.highlights?.focusText || 'Website, dashboard, AI workflow, dan sistem informasi',
+      focusText: content.highlights?.focusText || seed.highlights?.focusText || 'AI engineering, website development, automation, dan AI integration',
       workStyleLabel: content.highlights?.workStyleLabel || seed.highlights?.workStyleLabel || 'Cara kerja',
       workStyleText: content.highlights?.workStyleText || seed.highlights?.workStyleText || 'Cepat, rapi, strategis, dan tetap mudah dirawat setelah rilis',
     },
@@ -128,8 +136,8 @@ function hydrateSiteContent(content = {}) {
       footerNote: content.contact?.footerNote || seed.contact?.footerNote || 'Dibuat dengan detail dan standar kerja profesional.',
     },
     seo: {
-      title: content.seo?.title || seed.seo?.title || 'Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions',
-      description: content.seo?.description || seed.seo?.description || 'Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.',
+      title: content.seo?.title || seed.seo?.title || 'Rifki Nur Fahrezi Ahmad | AI Engineer, Website & Automation',
+      description: content.seo?.description || seed.seo?.description || 'Portfolio Rifki Nur Fahrezi Ahmad untuk AI engineering, website development, automation workflow, dan integrasi AI yang siap dipakai.',
     },
   }
 }
@@ -351,8 +359,9 @@ function Field({ label, children, hint }) {
 const textInputClass = 'w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-200'
 
 export default function PortfolioAdminApp() {
-  const [authToken, setAuthToken] = useState(() => getStoredAdminToken())
-  const [loginValue, setLoginValue] = useState(() => getStoredAdminToken())
+  const [authToken, setAuthToken] = useState(() => getStoredAdminSession())
+  const [loginUsername, setLoginUsername] = useState(() => getStoredAdminUsername())
+  const [loginPassword, setLoginPassword] = useState('')
   const [authenticated, setAuthenticated] = useState(false)
   const [booting, setBooting] = useState(true)
   const [authSubmitting, setAuthSubmitting] = useState(false)
@@ -372,14 +381,14 @@ export default function PortfolioAdminApp() {
   const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
-    const storedToken = getStoredAdminToken()
+    const storedSession = getStoredAdminSession()
 
-    if (!storedToken) {
+    if (!storedSession) {
       setBooting(false)
       return
     }
 
-    void authenticate(storedToken, { silent: true })
+    void authenticate({ sessionToken: storedSession }, { silent: true })
   }, [])
 
   function touch() {
@@ -416,14 +425,16 @@ export default function PortfolioAdminApp() {
     }
   }
 
-  async function authenticate(token, options = {}) {
+  async function authenticate(credentials, options = {}) {
     const { silent = false } = options
-    const trimmedToken = String(token || '').trim()
+    const sessionToken = String(credentials?.sessionToken || '').trim()
+    const username = String(credentials?.username ?? loginUsername ?? '').trim()
+    const password = String(credentials?.password ?? loginPassword ?? '')
 
-    if (!trimmedToken) {
+    if (!sessionToken && (!username || !password)) {
       setBooting(false)
       if (!silent) {
-        setNotice({ tone: 'error', text: 'Masukkan token admin untuk login.' })
+        setNotice({ tone: 'error', text: 'Masukkan username dan password admin untuk login.' })
       }
       return false
     }
@@ -439,7 +450,7 @@ export default function PortfolioAdminApp() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token: trimmedToken }),
+        body: JSON.stringify(sessionToken ? { sessionToken } : { username, password }),
       })
 
       const payload = await response.json().catch(() => ({}))
@@ -447,9 +458,15 @@ export default function PortfolioAdminApp() {
         throw new Error(payload.error || 'Gagal login sebagai admin.')
       }
 
-      sessionStorage.setItem('portfolio_admin_token', trimmedToken)
-      setAuthToken(trimmedToken)
-      setLoginValue(trimmedToken)
+      const nextUsername = String(payload.username || username || getStoredAdminUsername()).trim() || 'admin'
+      const nextToken = String(payload.token || sessionToken).trim()
+
+      sessionStorage.setItem('portfolio_admin_session', nextToken)
+      sessionStorage.setItem('portfolio_admin_username', nextUsername)
+      sessionStorage.removeItem('portfolio_admin_token')
+      setAuthToken(nextToken)
+      setLoginUsername(nextUsername)
+      setLoginPassword('')
       setAuthenticated(true)
       await loadPortfolio()
 
@@ -460,10 +477,11 @@ export default function PortfolioAdminApp() {
       return true
     } catch (error) {
       console.error(error)
+      sessionStorage.removeItem('portfolio_admin_session')
       sessionStorage.removeItem('portfolio_admin_token')
       setAuthToken('')
       setAuthenticated(false)
-      setLoginValue('')
+      setLoginPassword('')
       setProfile(hydrateProfile(portfolioSeed.profile))
       setSiteContent(hydrateSiteContent(portfolioSeed.siteContent))
       setHeroStats((portfolioSeed.heroStats || []).map(hydrateHeroStat))
@@ -485,9 +503,11 @@ export default function PortfolioAdminApp() {
   }
 
   function logout() {
+    sessionStorage.removeItem('portfolio_admin_session')
     sessionStorage.removeItem('portfolio_admin_token')
     setAuthToken('')
-    setLoginValue('')
+    setLoginUsername(getStoredAdminUsername())
+    setLoginPassword('')
     setAuthenticated(false)
     setSaving(false)
     setImportingKey('')
@@ -774,23 +794,35 @@ export default function PortfolioAdminApp() {
                 Masuk ke panel editor
               </h2>
               <p className="mt-3 text-sm leading-7 text-stone-600">
-                Gunakan token yang sama dengan environment PORTFOLIO_ADMIN_TOKEN di Vercel.
+                Gunakan username dan password admin dari environment Vercel. Jika username khusus belum diatur, default username adalah admin.
               </p>
 
               <div className="mt-8 space-y-4">
-                <Field label="Admin token">
+                <Field label="Username admin">
+                  <input
+                    type="text"
+                    value={loginUsername}
+                    onChange={(event) => setLoginUsername(event.target.value)}
+                    className={textInputClass}
+                    placeholder="admin"
+                    autoComplete="username"
+                  />
+                </Field>
+
+                <Field label="Password admin">
                   <input
                     type="password"
-                    value={loginValue}
-                    onChange={(event) => setLoginValue(event.target.value)}
+                    value={loginPassword}
+                    onChange={(event) => setLoginPassword(event.target.value)}
                     className={textInputClass}
-                    placeholder="Masukkan admin token"
+                    placeholder="Masukkan password admin"
+                    autoComplete="current-password"
                   />
                 </Field>
 
                 <button
                   type="button"
-                  onClick={() => authenticate(loginValue)}
+                  onClick={() => authenticate({ username: loginUsername, password: loginPassword })}
                   disabled={authSubmitting}
                   className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-stone-900 px-6 text-sm font-semibold text-stone-50 transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
                 >
@@ -1456,7 +1488,7 @@ export default function PortfolioAdminApp() {
 
             <section className="rounded-[2rem] border border-dashed border-stone-300 bg-white/70 p-6 text-sm leading-7 text-stone-600">
               <p className="font-semibold text-stone-900">Environment yang perlu disiapkan di Vercel</p>
-              <p className="mt-2">Set salah satu kredensial Blob yang didukung Vercel, yaitu BLOB_READ_WRITE_TOKEN atau koneksi store via OIDC, lalu tambahkan PORTFOLIO_ADMIN_TOKEN untuk mengamankan write API.</p>
+              <p className="mt-2">Set salah satu kredensial Blob yang didukung Vercel, yaitu BLOB_READ_WRITE_TOKEN atau koneksi store via OIDC. Untuk login admin, siapkan PORTFOLIO_ADMIN_USERNAME dan PORTFOLIO_ADMIN_PASSWORD. PORTFOLIO_ADMIN_TOKEN masih bisa dipakai sebagai fallback password atau session secret lama.</p>
               <p className="mt-2">Data publik sekarang mencakup profile, siteContent, heroStats, journey, tech stack, projects, dan certificates dari storage yang sama.</p>
             </section>
           </div>

@@ -79,12 +79,52 @@ function toHeroStatId(item, index) {
   return slugify(item?.id || item?.label, `hero-stat-${index + 1}`);
 }
 
+function useSeedWhenLegacy(value, seedValue, legacyValues = []) {
+  const text = String(value || "").trim();
+
+  if (!text) {
+    return String(seedValue || "").trim();
+  }
+
+  return legacyValues.includes(text) ? String(seedValue || "").trim() : text;
+}
+
+const LEGACY_PROFILE_TITLES = [
+  "Fullstack Developer, AI Builder, dan Digital Problem Solver",
+  "Fullstack Web Developer",
+  "Jasa Pemrograman Profesional",
+];
+
+const LEGACY_PROFILE_SUBTITLES = [
+  "Website | Dashboard | Automation | AI Tools | Sistem Informasi",
+  "React.js | Next.js | Laravel | Node.js",
+  "Website | Dashboard | Tugas IT | Skripsi",
+];
+
+const LEGACY_PROFILE_DESCRIPTIONS = [
+  "Saya membantu membangun website, dashboard, sistem informasi, automation workflow, dan solusi berbasis AI yang terasa rapi di frontend, stabil di backend, dan benar-benar berguna setelah rilis.",
+  "Seorang Fullstack Web Developer yang passionate dalam membangun aplikasi web modern. Berpengalaman mengembangkan website, dashboard, dan sistem informasi menggunakan teknologi terkini.",
+  "Butuh website, dashboard, atau bantuan tugas pemrograman? Saya siap membantu Anda dengan hasil profesional, pengerjaan cepat, dan harga terjangkau. Konsultasi gratis!",
+];
+
+const LEGACY_BRAND_BADGES = ["Open for web, AI, dan automation projects"];
+const LEGACY_HERO_CARD_LABELS = ["Web, AI, & Digital Systems"];
+const LEGACY_FOCUS_TEXTS = ["Website, dashboard, AI workflow, dan sistem informasi"];
+const LEGACY_SEO_TITLES = [
+  "Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions",
+  "Portfolio Website Design",
+];
+const LEGACY_SEO_DESCRIPTIONS = [
+  "Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.",
+  "Showcase your portfolio by storing certificates and project images, tracking your progress and experiences in a visually appealing format.",
+];
+
 function normalizeSiteContent(content = {}) {
   const seed = portfolioSeed.siteContent || {};
 
   return {
     brandName: String(content?.brandName || seed?.brandName || "Rifki Nur Fahrezi Ahmad").trim(),
-    brandBadge: String(content?.brandBadge || seed?.brandBadge || "Open for web, AI, dan automation projects").trim(),
+    brandBadge: useSeedWhenLegacy(content?.brandBadge, seed?.brandBadge || "Open for AI engineering, websites, and automation", LEGACY_BRAND_BADGES),
     navigation: {
       journey: String(content?.navigation?.journey || seed?.navigation?.journey || "Perjalanan").trim(),
       experience: String(content?.navigation?.experience || seed?.navigation?.experience || "Pengalaman").trim(),
@@ -98,7 +138,7 @@ function normalizeSiteContent(content = {}) {
       primaryCtaLabel: String(content?.hero?.primaryCtaLabel || seed?.hero?.primaryCtaLabel || "Lihat Karya").trim(),
       secondaryCtaLabel: String(content?.hero?.secondaryCtaLabel || seed?.hero?.secondaryCtaLabel || "Hubungi Saya").trim(),
       availabilityLabel: String(content?.hero?.availabilityLabel || seed?.hero?.availabilityLabel || "Tersedia untuk proyek baru").trim(),
-      cardLabel: String(content?.hero?.cardLabel || seed?.hero?.cardLabel || "Web, AI, & Digital Systems").trim(),
+      cardLabel: useSeedWhenLegacy(content?.hero?.cardLabel, seed?.hero?.cardLabel || "AI Engineer | Web & Automation", LEGACY_HERO_CARD_LABELS),
     },
     journey: {
       eyebrow: String(content?.journey?.eyebrow || seed?.journey?.eyebrow || "— Perjalanan").trim(),
@@ -106,15 +146,15 @@ function normalizeSiteContent(content = {}) {
     },
     experience: {
       eyebrow: String(content?.experience?.eyebrow || seed?.experience?.eyebrow || "— Pengalaman").trim(),
-      title: String(content?.experience?.title || seed?.experience?.title || "Saya membangun website, dashboard, automation, dan workflow AI yang benar-benar dipakai.").trim(),
+      title: String(content?.experience?.title || seed?.experience?.title || "Saya membangun website, AI workflow, automation, dan internal tools yang benar-benar dipakai.").trim(),
     },
     tech: {
       eyebrow: String(content?.tech?.eyebrow || seed?.tech?.eyebrow || "— Tech Stack").trim(),
-      title: String(content?.tech?.title || seed?.tech?.title || "Stack kerja untuk frontend, backend, database, deployment, dan automasi AI.").trim(),
+      title: String(content?.tech?.title || seed?.tech?.title || "Stack untuk website modern, AI integration, backend systems, dan automation workflows.").trim(),
     },
     highlights: {
       focusLabel: String(content?.highlights?.focusLabel || seed?.highlights?.focusLabel || "Fokus").trim(),
-      focusText: String(content?.highlights?.focusText || seed?.highlights?.focusText || "Website, dashboard, AI workflow, dan sistem informasi").trim(),
+      focusText: useSeedWhenLegacy(content?.highlights?.focusText, seed?.highlights?.focusText || "AI engineering, website development, automation, dan AI integration", LEGACY_FOCUS_TEXTS),
       workStyleLabel: String(content?.highlights?.workStyleLabel || seed?.highlights?.workStyleLabel || "Cara kerja").trim(),
       workStyleText: String(content?.highlights?.workStyleText || seed?.highlights?.workStyleText || "Cepat, rapi, strategis, dan tetap mudah dirawat setelah rilis").trim(),
     },
@@ -135,8 +175,8 @@ function normalizeSiteContent(content = {}) {
       footerNote: String(content?.contact?.footerNote || seed?.contact?.footerNote || "Dibuat dengan detail dan standar kerja profesional.").trim(),
     },
     seo: {
-      title: String(content?.seo?.title || seed?.seo?.title || "Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions").trim(),
-      description: String(content?.seo?.description || seed?.seo?.description || "Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.").trim(),
+      title: useSeedWhenLegacy(content?.seo?.title, seed?.seo?.title || "Rifki Nur Fahrezi Ahmad | AI Engineer, Website & Automation", LEGACY_SEO_TITLES),
+      description: useSeedWhenLegacy(content?.seo?.description, seed?.seo?.description || "Portfolio Rifki Nur Fahrezi Ahmad untuk AI engineering, website development, automation workflow, dan integrasi AI yang siap dipakai.", LEGACY_SEO_DESCRIPTIONS),
     },
   };
 }
@@ -147,9 +187,9 @@ function normalizeProfile(profile = {}) {
 
   return {
     name: String(profile?.name || seed.name || "").trim(),
-    title: String(profile?.title || seed.title || "").trim(),
-    subtitle: String(profile?.subtitle || seed.subtitle || "").trim(),
-    description: String(profile?.description || seed.description || "").trim(),
+    title: useSeedWhenLegacy(profile?.title, seed.title || "AI Engineer, Web Developer, dan Automation Specialist", LEGACY_PROFILE_TITLES),
+    subtitle: useSeedWhenLegacy(profile?.subtitle, seed.subtitle || "AI Engineer | Website Development | Automation | AI Integration", LEGACY_PROFILE_SUBTITLES),
+    description: useSeedWhenLegacy(profile?.description, seed.description || "Saya membangun website modern, workflow automation, AI integration, dan internal tools yang membantu bisnis bekerja lebih cepat, lebih cerdas, dan lebih efisien.", LEGACY_PROFILE_DESCRIPTIONS),
     status: String(profile?.status || seed.status || "").trim(),
     location: String(profile?.location || seed.location || "").trim(),
     email: String(profile?.email || seed.email || "").trim(),

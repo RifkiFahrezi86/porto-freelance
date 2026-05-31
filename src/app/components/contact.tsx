@@ -1,4 +1,4 @@
-import { Github, Instagram, Mail, MessageCircle, Settings2 } from "lucide-react";
+import { Github, Instagram, Mail, MessageCircle } from "lucide-react";
 import { Profile, SiteContent } from "./portfolio-store";
 
 export function Contact({
@@ -49,12 +49,6 @@ export function Contact({
             className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-stone-700 hover:bg-stone-800 transition"
           >
             <MessageCircle className="w-4 h-4" /> WhatsApp
-          </a>
-          <a
-            href="/admin/"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full border border-stone-700 hover:bg-stone-800 transition"
-          >
-            <Settings2 className="w-4 h-4" /> Admin
           </a>
         </div>
 

@@ -60,7 +60,7 @@ function toHeroStat(item, index) {
 function toSiteContent(content) {
   return {
     brandName: content?.brandName || "Rifki Nur Fahrezi Ahmad",
-    brandBadge: content?.brandBadge || "Open for web, AI, dan automation projects",
+    brandBadge: content?.brandBadge || "Open for AI engineering, websites, and automation",
     navigation: {
       journey: content?.navigation?.journey || "Perjalanan",
       experience: content?.navigation?.experience || "Pengalaman",
@@ -74,7 +74,7 @@ function toSiteContent(content) {
       primaryCtaLabel: content?.hero?.primaryCtaLabel || "Lihat Karya",
       secondaryCtaLabel: content?.hero?.secondaryCtaLabel || "Hubungi Saya",
       availabilityLabel: content?.hero?.availabilityLabel || "Tersedia untuk proyek baru",
-      cardLabel: content?.hero?.cardLabel || "Web, AI, & Digital Systems",
+      cardLabel: content?.hero?.cardLabel || "AI Engineer | Web & Automation",
     },
     journey: {
       eyebrow: content?.journey?.eyebrow || "— Perjalanan",
@@ -82,15 +82,15 @@ function toSiteContent(content) {
     },
     experience: {
       eyebrow: content?.experience?.eyebrow || "— Pengalaman",
-      title: content?.experience?.title || "Saya membangun website, dashboard, automation, dan workflow AI yang benar-benar dipakai.",
+      title: content?.experience?.title || "Saya membangun website, AI workflow, automation, dan internal tools yang benar-benar dipakai.",
     },
     tech: {
       eyebrow: content?.tech?.eyebrow || "— Tech Stack",
-      title: content?.tech?.title || "Stack kerja untuk frontend, backend, database, deployment, dan automasi AI.",
+      title: content?.tech?.title || "Stack untuk website modern, AI integration, backend systems, dan automation workflows.",
     },
     highlights: {
       focusLabel: content?.highlights?.focusLabel || "Fokus",
-      focusText: content?.highlights?.focusText || "Website, dashboard, AI workflow, dan sistem informasi",
+      focusText: content?.highlights?.focusText || "AI engineering, website development, automation, dan AI integration",
       workStyleLabel: content?.highlights?.workStyleLabel || "Cara kerja",
       workStyleText: content?.highlights?.workStyleText || "Cepat, rapi, strategis, dan tetap mudah dirawat setelah rilis",
     },
@@ -111,8 +111,8 @@ function toSiteContent(content) {
       footerNote: content?.contact?.footerNote || "Dibuat dengan detail dan standar kerja profesional.",
     },
     seo: {
-      title: content?.seo?.title || "Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions",
-      description: content?.seo?.description || "Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.",
+      title: content?.seo?.title || "Rifki Nur Fahrezi Ahmad | AI Engineer, Website & Automation",
+      description: content?.seo?.description || "Portfolio Rifki Nur Fahrezi Ahmad untuk AI engineering, website development, automation workflow, dan integrasi AI yang siap dipakai.",
     },
   };
 }

@@ -152,7 +152,7 @@ function normalizeSiteContent(content: Partial<SiteContent> = {}): SiteContent {
 
   return {
     brandName: content.brandName || seed.brandName || "Rifki Nur Fahrezi Ahmad",
-    brandBadge: content.brandBadge || seed.brandBadge || "Open for web, AI, dan automation projects",
+    brandBadge: content.brandBadge || seed.brandBadge || "Open for AI engineering, websites, and automation",
     navigation: {
       journey: content.navigation?.journey || seed.navigation.journey || "Perjalanan",
       experience: content.navigation?.experience || seed.navigation.experience || "Pengalaman",
@@ -166,7 +166,7 @@ function normalizeSiteContent(content: Partial<SiteContent> = {}): SiteContent {
       primaryCtaLabel: content.hero?.primaryCtaLabel || seed.hero.primaryCtaLabel || "Lihat Karya",
       secondaryCtaLabel: content.hero?.secondaryCtaLabel || seed.hero.secondaryCtaLabel || "Hubungi Saya",
       availabilityLabel: content.hero?.availabilityLabel || seed.hero.availabilityLabel || "Tersedia untuk proyek baru",
-      cardLabel: content.hero?.cardLabel || seed.hero.cardLabel || "Web, AI, & Digital Systems",
+      cardLabel: content.hero?.cardLabel || seed.hero.cardLabel || "AI Engineer | Web & Automation",
     },
     journey: {
       eyebrow: content.journey?.eyebrow || seed.journey.eyebrow || "— Perjalanan",
@@ -174,15 +174,15 @@ function normalizeSiteContent(content: Partial<SiteContent> = {}): SiteContent {
     },
     experience: {
       eyebrow: content.experience?.eyebrow || seed.experience.eyebrow || "— Pengalaman",
-      title: content.experience?.title || seed.experience.title || "Saya membangun website, dashboard, automation, dan workflow AI yang benar-benar dipakai.",
+      title: content.experience?.title || seed.experience.title || "Saya membangun website, AI workflow, automation, dan internal tools yang benar-benar dipakai.",
     },
     tech: {
       eyebrow: content.tech?.eyebrow || seed.tech.eyebrow || "— Tech Stack",
-      title: content.tech?.title || seed.tech.title || "Stack kerja untuk frontend, backend, database, deployment, dan automasi AI.",
+      title: content.tech?.title || seed.tech.title || "Stack untuk website modern, AI integration, backend systems, dan automation workflows.",
     },
     highlights: {
       focusLabel: content.highlights?.focusLabel || seed.highlights.focusLabel || "Fokus",
-      focusText: content.highlights?.focusText || seed.highlights.focusText || "Website, dashboard, AI workflow, dan sistem informasi",
+      focusText: content.highlights?.focusText || seed.highlights.focusText || "AI engineering, website development, automation, dan AI integration",
       workStyleLabel: content.highlights?.workStyleLabel || seed.highlights.workStyleLabel || "Cara kerja",
       workStyleText: content.highlights?.workStyleText || seed.highlights.workStyleText || "Cepat, rapi, strategis, dan tetap mudah dirawat setelah rilis",
     },
@@ -203,8 +203,8 @@ function normalizeSiteContent(content: Partial<SiteContent> = {}): SiteContent {
       footerNote: content.contact?.footerNote || seed.contact.footerNote || "Dibuat dengan detail dan standar kerja profesional.",
     },
     seo: {
-      title: content.seo?.title || seed.seo.title || "Rifki Nur Fahrezi Ahmad | Fullstack, AI, dan Digital Solutions",
-      description: content.seo?.description || seed.seo.description || "Portfolio Rifki Nur Fahrezi Ahmad untuk website, dashboard, automation workflow, AI tools, dan sistem informasi yang siap dipakai.",
+      title: content.seo?.title || seed.seo.title || "Rifki Nur Fahrezi Ahmad | AI Engineer, Website & Automation",
+      description: content.seo?.description || seed.seo.description || "Portfolio Rifki Nur Fahrezi Ahmad untuk AI engineering, website development, automation workflow, dan integrasi AI yang siap dipakai.",
     },
   };
 }
