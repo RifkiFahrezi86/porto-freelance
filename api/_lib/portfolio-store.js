@@ -1,8 +1,9 @@
 import path from "node:path";
-import { get, put } from "@vercel/blob";
+import { BlobNotFoundError, head, put } from "@vercel/blob";
 import { portfolioSeed } from "../../src/app/data/portfolio-content.js";
 
 const PORTFOLIO_DATA_PATH = "portfolio/content.json";
+const PORTFOLIO_DATA_CACHE_SECONDS = 60;
 
 const ALLOWED_CONTENT_TYPES = [
   "application/pdf",
@@ -100,17 +101,31 @@ export function normalizePortfolioData(data = {}) {
   };
 }
 
+function createBlobReadUrl(blobUrl, uploadedAt) {
+  const url = new URL(blobUrl);
+  const version = uploadedAt instanceof Date ? uploadedAt.getTime() : Date.now();
+  url.searchParams.set("v", String(version));
+  return url.toString();
+}
+
 export async function readPortfolioData() {
   try {
-    const blob = await get(PORTFOLIO_DATA_PATH, { access: "private" });
+    const blob = await head(PORTFOLIO_DATA_PATH);
+    const response = await fetch(createBlobReadUrl(blob.url, blob.uploadedAt), {
+      cache: "no-store",
+    });
 
-    if (!blob || blob.statusCode !== 200 || !blob.stream) {
+    if (!response.ok) {
       return normalizePortfolioData();
     }
 
-    const text = await new Response(blob.stream).text();
+    const text = await response.text();
     return normalizePortfolioData(JSON.parse(text));
   } catch (error) {
+    if (error instanceof BlobNotFoundError) {
+      return normalizePortfolioData();
+    }
+
     console.warn("Falling back to bundled portfolio seed:", error);
     return normalizePortfolioData();
   }
@@ -123,9 +138,10 @@ export async function writePortfolioData(data) {
   });
 
   await put(PORTFOLIO_DATA_PATH, JSON.stringify(normalized, null, 2), {
-    access: "private",
+    access: "public",
     addRandomSuffix: false,
     allowOverwrite: true,
+    cacheControlMaxAge: PORTFOLIO_DATA_CACHE_SECONDS,
     contentType: "application/json",
   });
 
