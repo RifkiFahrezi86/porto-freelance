@@ -23,7 +23,7 @@ const EXTENSION_BY_CONTENT_TYPE = {
   "image/webp": "webp",
 };
 
-const SAFE_UPLOAD_FOLDERS = new Set(["profile", "projects", "certificates"]);
+const SAFE_UPLOAD_FOLDERS = new Set(["profile", "projects", "certificates", "tech-stack"]);
 
 function slugify(value, fallback = "item") {
   return String(value || "")
@@ -395,7 +395,9 @@ async function putAssetBody({ body, folder = "projects", filenameHint = "asset",
       ? "profile-image"
       : safeFolder === "projects"
         ? "project-image"
-        : "certificate-file",
+        : safeFolder === "tech-stack"
+          ? "tech-logo"
+          : "certificate-file",
   );
   const targetPath = `portfolio/${safeFolder}/${safeFilename}.${extension}`;
 
