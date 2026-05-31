@@ -1,3 +1,17 @@
+import { BrainCircuit, Code2, Database, Sparkles, Workflow } from 'lucide-react'
+
+function createLucideIcon(Icon) {
+  return function LucideTechIcon({ size = 24, className = '' }) {
+    return <Icon size={size} className={className} strokeWidth={1.85} />
+  }
+}
+
+export const SqlIcon = createLucideIcon(Database)
+export const PythonIcon = createLucideIcon(Code2)
+export const AiIcon = createLucideIcon(BrainCircuit)
+export const AutomationIcon = createLucideIcon(Workflow)
+export const OpenAiIcon = createLucideIcon(Sparkles)
+
 // Brand SVG icons for tech stack
 export function ReactIcon({ size = 24, className = '' }) {
   return (
@@ -115,6 +129,81 @@ export function PhpIcon({ size = 24, className = '' }) {
   )
 }
 
+function normalizeTechIconKey(value = '') {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '')
+}
+
+const techIconAliases = {
+  react: 'React.js',
+  reactjs: 'React.js',
+  next: 'Next.js',
+  nextjs: 'Next.js',
+  node: 'Node.js',
+  nodejs: 'Node.js',
+  express: 'Express.js',
+  expressjs: 'Express.js',
+  mongo: 'MongoDB',
+  mongodb: 'MongoDB',
+  mysql: 'MySQL',
+  sql: 'SQL',
+  sqldatabase: 'SQL',
+  postgresql: 'PostgreSQL',
+  postgres: 'PostgreSQL',
+  tailwind: 'Tailwind CSS',
+  tailwindcss: 'Tailwind CSS',
+  javascript: 'JavaScript',
+  js: 'JavaScript',
+  php: 'PHP',
+  restapi: 'REST API',
+  api: 'REST API',
+  html: 'HTML5',
+  html5: 'HTML5',
+  css: 'CSS3',
+  css3: 'CSS3',
+  git: 'Git',
+  python: 'Python',
+  ai: 'AI',
+  aiautomation: 'AI Automation',
+  automation: 'Automation',
+  openai: 'OpenAI API',
+  openaiapi: 'OpenAI API',
+}
+
+const genericIconKeys = new Set(['ai', 'automation', 'backend', 'code'])
+
+export function isTechLogoAsset(value = '') {
+  const trimmed = String(value || '').trim()
+
+  return /^(https?:\/\/|\/(?!\/)|\.\.\/|\.\/|blob:|data:image\/)/i.test(trimmed)
+}
+
+function getCanonicalTechIconKey(value = '') {
+  const trimmed = String(value || '').trim()
+  const normalized = normalizeTechIconKey(trimmed)
+
+  return techIconAliases[normalized] || trimmed
+}
+
+export function resolveTechIconComponent({ icon = '', name = '' } = {}) {
+  if (isTechLogoAsset(icon)) {
+    return null
+  }
+
+  const explicitKey = getCanonicalTechIconKey(icon)
+  const nameKey = getCanonicalTechIconKey(name)
+  const explicitIcon = techIconMap[explicitKey] || null
+  const nameIcon = techIconMap[nameKey] || null
+
+  if (nameIcon && genericIconKeys.has(normalizeTechIconKey(icon))) {
+    return nameIcon
+  }
+
+  return explicitIcon || nameIcon || null
+}
+
 // Map of tech name to icon component
 export const techIconMap = {
   'React.js': ReactIcon,
@@ -123,7 +212,9 @@ export const techIconMap = {
   'Node.js': NodejsIcon,
   'Express.js': ExpressIcon,
   'MongoDB': MongodbIcon,
-  'MySQL': MysqlIcon,
+  'SQL': SqlIcon,
+  'MySQL': SqlIcon,
+  'PostgreSQL': SqlIcon,
   'Tailwind CSS': TailwindIcon,
   'JavaScript': JavaScriptIcon,
   'PHP': PhpIcon,
@@ -131,4 +222,10 @@ export const techIconMap = {
   'HTML5': Html5Icon,
   'CSS3': Css3Icon,
   'Git': GitIcon,
+  'Python': PythonIcon,
+  'AI': AiIcon,
+  'AI Automation': AutomationIcon,
+  'Automation': AutomationIcon,
+  'OpenAI': OpenAiIcon,
+  'OpenAI API': OpenAiIcon,
 }

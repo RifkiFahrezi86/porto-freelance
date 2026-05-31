@@ -19,6 +19,7 @@ import {
   UserRound,
 } from 'lucide-react'
 import { portfolioSeed } from '../app/data/portfolio-content.js'
+import { isTechLogoAsset } from '../components/TechIcons.jsx'
 
 function getStoredAdminSession() {
   if (typeof window === 'undefined') {
@@ -215,6 +216,7 @@ function hydrateTechItem(item = {}) {
     name: item.name || '',
     level: item.level || 'Mahir',
     icon: item.icon || item.name || 'Code',
+    filenameHint: item.filenameHint || '',
   }
 }
 
@@ -473,7 +475,15 @@ function AssetDropzone({ label, hint, accept, loading = false, currentUrl = '', 
   )
 }
 
-const textInputClass = 'w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-200'
+const textInputClass = 'w-full rounded-2xl border border-stone-200 bg-white px-4 py-3 text-base text-stone-800 outline-none transition placeholder:text-stone-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 sm:text-sm'
+const primaryButtonClass = 'inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-stone-900 px-6 text-sm font-semibold text-stone-50 transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto'
+const secondaryButtonClass = 'inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 text-sm font-semibold text-stone-800 transition hover:bg-white sm:w-auto'
+const outlineButtonClass = 'inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 text-sm font-semibold text-stone-800 transition hover:bg-stone-50 sm:w-auto'
+const dangerButtonClass = 'inline-flex w-full items-center justify-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50 sm:w-auto'
+const compactDangerButtonClass = 'inline-flex w-full items-center justify-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-50 sm:w-auto'
+const sectionHeaderClass = 'mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'
+const cardHeaderClass = 'mb-5 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between'
+const sectionTitleClass = 'mt-2 text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl'
 
 export default function PortfolioAdminApp() {
   const [authToken, setAuthToken] = useState(() => getStoredAdminSession())
@@ -928,6 +938,24 @@ export default function PortfolioAdminApp() {
     })
   }
 
+  async function uploadTechLogo(index, file) {
+    const tech = techStack[index]
+
+    await uploadAssetFile({
+      file,
+      folder: 'tech-stack',
+      filenameHint: tech?.filenameHint || tech?.name || 'tech-logo',
+      requestKey: `tech-${index}`,
+      onSuccess: (url) => {
+        const nextTechStack = techStack.map((item, currentIndex) => currentIndex === index ? { ...item, icon: url } : item)
+        setTechStack(nextTechStack)
+        setDirty(true)
+        return { techStack: nextTechStack }
+      },
+      successText: 'Logo tech stack berhasil diupload.',
+    })
+  }
+
   async function savePortfolio() {
     await persistPortfolio()
   }
@@ -954,14 +982,14 @@ export default function PortfolioAdminApp() {
   if (!authenticated) {
     return (
       <div className="min-h-screen bg-[#fbf8f3] text-stone-900">
-        <div className="mx-auto flex min-h-screen max-w-6xl items-center px-6 py-10 lg:px-8">
+        <div className="mx-auto flex min-h-screen max-w-6xl items-center px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
           <div className="grid w-full gap-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(340px,0.95fr)]">
-            <section className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_24px_80px_rgba(120,113,108,0.08)]">
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_24px_80px_rgba(120,113,108,0.08)] sm:p-8">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
                 <Sparkles size={14} />
                 Portfolio Control Room
               </div>
-              <h1 className="text-4xl font-black tracking-tight text-stone-900 md:text-6xl">
+              <h1 className="text-3xl font-black tracking-tight text-stone-900 sm:text-4xl md:text-6xl">
                 Login admin untuk mengelola semua isi portfolio.
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600 md:text-base">
@@ -984,13 +1012,13 @@ export default function PortfolioAdminApp() {
               </div>
             </section>
 
-            <section className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_24px_80px_rgba(120,113,108,0.08)]">
+            <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_24px_80px_rgba(120,113,108,0.08)] sm:p-8">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
                 <ShieldCheck size={14} />
                 Admin Login
               </div>
 
-              <h2 className="text-3xl font-black tracking-tight text-stone-900">
+              <h2 className="text-2xl font-black tracking-tight text-stone-900 sm:text-3xl">
                 Masuk ke panel editor
               </h2>
               <p className="mt-3 text-sm leading-7 text-stone-600">
@@ -1046,15 +1074,15 @@ export default function PortfolioAdminApp() {
 
   return (
     <div className="min-h-screen bg-[#fbf8f3] text-stone-900">
-      <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-        <section className="rounded-[2rem] border border-stone-200 bg-white p-8 shadow-[0_24px_80px_rgba(120,113,108,0.08)]">
+      <div className="mx-auto max-w-7xl px-4 pb-28 pt-6 sm:px-6 sm:py-10 lg:px-8 lg:pb-10">
+        <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_24px_80px_rgba(120,113,108,0.08)] sm:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
                 <Sparkles size={14} />
                 Portfolio Control Room
               </div>
-              <h1 className="text-4xl font-black tracking-tight text-stone-900 md:text-6xl">
+              <h1 className="text-3xl font-black tracking-tight text-stone-900 sm:text-4xl md:text-6xl">
                 Editor lengkap untuk mengelola portfolio Anda seperti website profesional.
               </h1>
               <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600 md:text-base">
@@ -1062,7 +1090,7 @@ export default function PortfolioAdminApp() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center lg:w-auto lg:justify-end">
               <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
                 <ShieldCheck size={16} />
                 Login admin aktif
@@ -1070,7 +1098,7 @@ export default function PortfolioAdminApp() {
               <button
                 type="button"
                 onClick={logout}
-                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full border border-stone-200 bg-white px-5 text-sm font-semibold text-stone-800 transition hover:bg-stone-50"
+                className={outlineButtonClass}
               >
                 <LogOut size={16} />
                 Logout
@@ -1079,7 +1107,7 @@ export default function PortfolioAdminApp() {
                 type="button"
                 onClick={savePortfolio}
                 disabled={saving || loading}
-                className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full bg-stone-900 px-6 text-sm font-semibold text-stone-50 transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className={primaryButtonClass}
               >
                 {saving ? <LoaderCircle size={18} className="animate-spin" /> : <Save size={18} />}
                 Simpan semua perubahan
@@ -1139,10 +1167,10 @@ export default function PortfolioAdminApp() {
         ) : (
           <div className="mt-8 space-y-8">
             <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className={sectionHeaderClass}>
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Branding, Copy & SEO</p>
-                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Atur nama brand, judul tab, label menu, copy section, dan teks penting lainnya</h2>
+                  <h2 className={sectionTitleClass}>Atur nama brand, judul tab, label menu, copy section, dan teks penting lainnya</h2>
                 </div>
               </div>
 
@@ -1274,10 +1302,10 @@ export default function PortfolioAdminApp() {
             </section>
 
             <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className={sectionHeaderClass}>
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Profil & Hero</p>
-                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Atur nama, foto, kontak, dan copy utama website</h2>
+                  <h2 className={sectionTitleClass}>Atur nama, foto, kontak, dan copy utama website</h2>
                 </div>
               </div>
 
@@ -1343,15 +1371,15 @@ export default function PortfolioAdminApp() {
             </section>
 
             <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className={sectionHeaderClass}>
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Hero Stats</p>
-                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Atur angka dan label hero, termasuk menghapus klien atau label lain yang tidak Anda mau</h2>
+                  <h2 className={sectionTitleClass}>Atur angka dan label hero, termasuk menghapus klien atau label lain yang tidak Anda mau</h2>
                 </div>
                 <button
                   type="button"
                   onClick={addHeroStat}
-                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-semibold text-stone-800 transition hover:bg-white"
+                  className={secondaryButtonClass}
                 >
                   <Plus size={16} />
                   Tambah hero stat
@@ -1361,7 +1389,7 @@ export default function PortfolioAdminApp() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 {heroStats.map((item, index) => (
                   <article key={item.id} className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5">
-                    <div className="mb-4 flex items-start justify-between gap-3">
+                    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{item.id}</p>
                         <h3 className="mt-2 text-lg font-semibold text-stone-900">Stat #{index + 1}</h3>
@@ -1369,7 +1397,7 @@ export default function PortfolioAdminApp() {
                       <button
                         type="button"
                         onClick={() => removeHeroStat(index)}
-                        className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-50"
+                        className={compactDangerButtonClass}
                       >
                         <Trash2 size={12} />
                         Hapus
@@ -1394,15 +1422,15 @@ export default function PortfolioAdminApp() {
             </section>
 
             <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className={sectionHeaderClass}>
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Pengalaman & Catatan</p>
-                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Kelola semua pengalaman yang tampil di journey dan section pengalaman</h2>
+                  <h2 className={sectionTitleClass}>Kelola semua pengalaman yang tampil di journey dan section pengalaman</h2>
                 </div>
                 <button
                   type="button"
                   onClick={addJourneyItem}
-                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-semibold text-stone-800 transition hover:bg-white"
+                  className={secondaryButtonClass}
                 >
                   <Plus size={16} />
                   Tambah pengalaman
@@ -1412,7 +1440,7 @@ export default function PortfolioAdminApp() {
               <div className="space-y-5">
                 {journey.map((item, index) => (
                   <article key={item.id} className="rounded-[1.75rem] border border-stone-200 bg-stone-50 p-5 md:p-6">
-                    <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                    <div className={cardHeaderClass}>
                       <div>
                         <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{item.id}</p>
                         <h3 className="mt-2 text-xl font-semibold text-stone-900">Catatan pengalaman #{index + 1}</h3>
@@ -1420,7 +1448,7 @@ export default function PortfolioAdminApp() {
                       <button
                         type="button"
                         onClick={() => removeJourneyItem(index)}
-                        className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                        className={dangerButtonClass}
                       >
                         <Trash2 size={14} />
                         Hapus
@@ -1450,15 +1478,15 @@ export default function PortfolioAdminApp() {
             </section>
 
             <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className={sectionHeaderClass}>
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Tech Stack</p>
-                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Kembalikan, beri logo, dan ubah tech stack lama Anda kapan saja</h2>
+                  <h2 className={sectionTitleClass}>Kembalikan, beri logo, dan ubah tech stack lama Anda kapan saja</h2>
                 </div>
                 <button
                   type="button"
                   onClick={addTechItem}
-                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-semibold text-stone-800 transition hover:bg-white"
+                  className={secondaryButtonClass}
                 >
                   <Plus size={16} />
                   Tambah tech stack
@@ -1466,9 +1494,14 @@ export default function PortfolioAdminApp() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {techStack.map((item, index) => (
+                {techStack.map((item, index) => {
+                  const requestKey = `tech-${index}`
+                  const isImporting = importingKey === requestKey
+                  const currentLogoUrl = isTechLogoAsset(item.icon) ? item.icon : ''
+
+                  return (
                   <article key={item.id} className="rounded-[1.5rem] border border-stone-200 bg-stone-50 p-5">
-                    <div className="mb-4 flex items-start justify-between gap-3">
+                    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div>
                         <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{item.id}</p>
                         <h3 className="mt-2 text-lg font-semibold text-stone-900">Tech #{index + 1}</h3>
@@ -1476,7 +1509,7 @@ export default function PortfolioAdminApp() {
                       <button
                         type="button"
                         onClick={() => removeTechItem(index)}
-                        className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-50"
+                        className={compactDangerButtonClass}
                       >
                         <Trash2 size={12} />
                         Hapus
@@ -1490,25 +1523,53 @@ export default function PortfolioAdminApp() {
                       <Field label="Level / label">
                         <input value={item.level} onChange={(event) => updateTechItem(index, { level: event.target.value })} className={textInputClass} placeholder="Mahir" />
                       </Field>
-                      <Field label="Icon / logo key" hint="Contoh: React.js, Next.js, Laravel, Node.js, MongoDB, MySQL, Tailwind CSS, JavaScript, PHP, Git, AI, Automation.">
-                        <input value={item.icon} onChange={(event) => updateTechItem(index, { icon: event.target.value })} className={textInputClass} placeholder="React.js" />
+                      <Field label="Icon key / URL logo" hint="Bisa isi key seperti React.js, SQL, Python, OpenAI API, atau tempel URL gambar/logo Blob langsung.">
+                        <input value={item.icon} onChange={(event) => updateTechItem(index, { icon: event.target.value })} className={textInputClass} placeholder="React.js atau https://..." />
                       </Field>
                     </div>
+
+                    <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+                      <AssetDropzone
+                        label="Upload logo tech"
+                        hint="Tarik logo PNG, SVG, JPG, atau WEBP ke sini. URL logo akan terisi otomatis setelah upload."
+                        accept="image/*,.svg"
+                        loading={isImporting}
+                        currentUrl={currentLogoUrl}
+                        onFileSelected={(file) => uploadTechLogo(index, file)}
+                      />
+                      <Field label="Nama file Blob" hint="Opsional, dipakai sebagai nama dasar file logo di Blob.">
+                        <input value={item.filenameHint} onChange={(event) => updateTechItem(index, { filenameHint: event.target.value })} className={textInputClass} placeholder="misal: openai-logo" />
+                      </Field>
+                    </div>
+
+                    {currentLogoUrl ? (
+                      <div className="mt-4 rounded-[1.5rem] border border-stone-200 bg-white p-4 text-sm text-stone-600">
+                        <p className="font-semibold text-stone-900">Preview logo</p>
+                        <div className="mt-3 flex flex-wrap items-center gap-3">
+                          <img src={currentLogoUrl} alt={`${item.name || `Tech ${index + 1}`} logo`} className="h-11 w-11 rounded-2xl border border-stone-200 bg-stone-50 object-contain p-1.5" />
+                          <a href={currentLogoUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-stone-700 no-underline hover:text-stone-900">
+                            <ExternalLink size={14} />
+                            Buka logo
+                          </a>
+                        </div>
+                      </div>
+                    ) : null}
                   </article>
-                ))}
+                  )
+                })}
               </div>
             </section>
 
             <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className={sectionHeaderClass}>
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Projects</p>
-                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Kelola karya yang tampil di landing page</h2>
+                  <h2 className={sectionTitleClass}>Kelola karya yang tampil di landing page</h2>
                 </div>
                 <button
                   type="button"
                   onClick={addProject}
-                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-semibold text-stone-800 transition hover:bg-white"
+                  className={secondaryButtonClass}
                 >
                   <Plus size={16} />
                   Tambah project
@@ -1522,7 +1583,7 @@ export default function PortfolioAdminApp() {
 
                   return (
                     <article key={project.id} className="rounded-[1.75rem] border border-stone-200 bg-stone-50 p-5 md:p-6">
-                      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                      <div className={cardHeaderClass}>
                         <div>
                           <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{project.id}</p>
                           <h3 className="mt-2 text-xl font-semibold text-stone-900">Project #{index + 1}</h3>
@@ -1530,7 +1591,7 @@ export default function PortfolioAdminApp() {
                         <button
                           type="button"
                           onClick={() => removeProject(index)}
-                          className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                          className={dangerButtonClass}
                         >
                           <Trash2 size={14} />
                           Hapus
@@ -1588,15 +1649,15 @@ export default function PortfolioAdminApp() {
             </section>
 
             <section className="rounded-[2rem] border border-stone-200 bg-white p-6 shadow-[0_18px_60px_rgba(120,113,108,0.07)] md:p-8">
-              <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div className={sectionHeaderClass}>
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-amber-700">— Certificates</p>
-                  <h2 className="mt-2 text-3xl font-bold tracking-tight text-stone-900">Tambahkan file sertifikat ke portfolio</h2>
+                  <h2 className={sectionTitleClass}>Tambahkan file sertifikat ke portfolio</h2>
                 </div>
                 <button
                   type="button"
                   onClick={addCertificate}
-                  className="inline-flex items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-5 py-3 text-sm font-semibold text-stone-800 transition hover:bg-white"
+                  className={secondaryButtonClass}
                 >
                   <Plus size={16} />
                   Tambah certificate
@@ -1610,7 +1671,7 @@ export default function PortfolioAdminApp() {
 
                   return (
                     <article key={certificate.id} className="rounded-[1.75rem] border border-stone-200 bg-stone-50 p-5 md:p-6">
-                      <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
+                      <div className={cardHeaderClass}>
                         <div>
                           <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{certificate.id}</p>
                           <h3 className="mt-2 text-xl font-semibold text-stone-900">Certificate #{index + 1}</h3>
@@ -1618,7 +1679,7 @@ export default function PortfolioAdminApp() {
                         <button
                           type="button"
                           onClick={() => removeCertificate(index)}
-                          className="inline-flex items-center gap-2 rounded-full border border-rose-200 bg-white px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-50"
+                          className={dangerButtonClass}
                         >
                           <Trash2 size={14} />
                           Hapus
@@ -1678,6 +1739,28 @@ export default function PortfolioAdminApp() {
             </section>
           </div>
         )}
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-stone-200 bg-[#fbf8f3]/95 px-4 py-3 backdrop-blur lg:hidden">
+        <div className="mx-auto max-w-7xl rounded-[1.5rem] border border-stone-200 bg-white px-4 py-4 shadow-[0_-12px_30px_rgba(120,113,108,0.12)]">
+          <div className="flex flex-col gap-3">
+            <div className="min-w-0">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-stone-500">Editor mobile</p>
+              <p className={`truncate text-sm font-medium ${dirty ? 'text-amber-800' : 'text-emerald-700'}`}>
+                {dirty ? 'Ada perubahan belum disimpan' : 'Semua perubahan tersimpan'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={savePortfolio}
+              disabled={saving || loading}
+              className="inline-flex h-[52px] w-full items-center justify-center gap-2 rounded-full bg-stone-900 px-5 text-sm font-semibold text-stone-50 transition hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? <LoaderCircle size={18} className="animate-spin" /> : <Save size={18} />}
+              Simpan perubahan
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

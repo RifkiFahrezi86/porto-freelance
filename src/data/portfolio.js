@@ -153,9 +153,9 @@ export const techStack = [
   { name: "HTML5", level: "Mahir", icon: "HTML5" },
   { name: "CSS3", level: "Mahir", icon: "CSS3" },
   { name: "Git", level: "Mahir", icon: "Git" },
-  { name: "Python", level: "Menengah", icon: "Automation" },
-  { name: "AI Automation", level: "Menengah", icon: "AI" },
-  { name: "OpenAI API", level: "Menengah", icon: "AI" },
+  { name: "Python", level: "Menengah", icon: "Python" },
+  { name: "AI Automation", level: "Menengah", icon: "AI Automation" },
+  { name: "OpenAI API", level: "Menengah", icon: "OpenAI API" },
 ];
 
 export const certificates = [

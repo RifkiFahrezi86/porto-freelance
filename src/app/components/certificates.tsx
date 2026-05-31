@@ -28,25 +28,25 @@ export function Certificates({
   const [preview, setPreview] = useState<Certificate | null>(null);
 
   return (
-    <section id="certificates" className="bg-[#fbf8f3] py-24">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="mb-14">
+    <section id="certificates" className="bg-[#fbf8f3] py-16 sm:py-20 md:py-24">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="mb-10 sm:mb-14">
           <div>
-            <div className="text-sm text-amber-700 uppercase tracking-widest mb-3">{siteContent.certificates.eyebrow}</div>
-            <h2 className="text-stone-900 tracking-tight text-4xl md:text-5xl max-w-2xl">
+            <div className="mb-2 text-xs uppercase tracking-widest text-amber-700 sm:mb-3 sm:text-sm">{siteContent.certificates.eyebrow}</div>
+            <h2 className="max-w-2xl text-3xl tracking-tight text-stone-900 sm:text-4xl md:text-5xl">
               {siteContent.certificates.title}
             </h2>
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {items.map((c) => {
             const certificateUrl = normalizeCertificateUrl(c.image);
 
             return (
             <div
               key={c.id}
-              className="group relative bg-white border border-stone-200 rounded-2xl overflow-hidden hover:shadow-lg transition"
+              className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:shadow-lg"
             >
               {certificateUrl && !isDocumentUrl(certificateUrl) ? (
                 <button
@@ -80,12 +80,12 @@ export function Certificates({
                   </div>
                 </div>
               )}
-              <div className="p-5">
-                <div className="flex items-center gap-2 text-amber-700 text-xs mb-2">
+              <div className="p-4 sm:p-5">
+                <div className="mb-2 flex items-center gap-2 text-[11px] text-amber-700 sm:text-xs">
                   <Award className="w-3.5 h-3.5" /> {c.issuer} · {c.date}
                 </div>
-                <div className="text-stone-900">{c.title}</div>
-                {c.credential ? <div className="mt-2 text-xs uppercase tracking-[0.18em] text-stone-500">{c.credential}</div> : null}
+                <div className="text-sm text-stone-900 sm:text-base">{c.title}</div>
+                {c.credential ? <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-stone-500 sm:text-xs">{c.credential}</div> : null}
                 {certificateUrl ? (
                   <a href={certificateUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm text-stone-600 no-underline hover:text-stone-900">
                     <ExternalLink className="h-4 w-4" />
