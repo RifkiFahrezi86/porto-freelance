@@ -1,16 +1,29 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Rifki Portfolio
 
-Currently, two official plugins are available:
+Portfolio publik ini memakai desain baru sebagai acuan visual, tetapi kontennya mengambil data portfolio Rifki dan dapat disimpan ke Vercel Blob.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Fitur utama
 
-## React Compiler
+- Landing page publik dibangun dari `src/main.tsx` dan membaca project/certificate dari `/api/portfolio`.
+- Halaman admin tersedia di `/admin/` untuk menambah project, menambah certificate, dan menyalin gambar/PDF dari URL eksternal ke Vercel Blob.
+- Website publik tetap punya fallback data lokal bila Blob atau API belum aktif.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Menjalankan lokal
 
-## Expanding the ESLint configuration
+1. Jalankan `npm install`
+2. Jalankan `npm run dev`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Environment Vercel
+
+Set salah satu kredensial Blob yang didukung Vercel:
+
+- `BLOB_READ_WRITE_TOKEN`
+- atau pasangan `BLOB_STORE_ID` + `VERCEL_OIDC_TOKEN`
+
+Lalu tambahkan:
+
+- `PORTFOLIO_ADMIN_TOKEN`
+
+`PORTFOLIO_ADMIN_TOKEN` dipakai oleh `/admin/` untuk mengizinkan write ke `/api/portfolio` dan `/api/portfolio/media`.
+  

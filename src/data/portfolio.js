@@ -286,4 +286,41 @@ export const projects = [
     duration: "7 hari",
     category: "website",
   },
+  {
+    title: "Poster Perkembangan Manusia — Final Team",
+    description:
+      "Poster tugas kuliah mata kuliah pertumbuhan dan perkembangan fisik, membahas fase perkembangan manusia dari bayi hingga lansia dengan visual infografis dan ringkasan tiap tahap.",
+    tech: ["HTML", "CSS", "JavaScript", "html2canvas"],
+    image: "/projects/akademik/poster-nur-arslan.jpg",
+    github: null,
+    demo: "/projects/akademik/poster-nur-arslan.jpg",
+    features: [
+      "Infografis Tahap Usia",
+      "Penjelasan Tiap Fase",
+      "Export JPG/PNG",
+      "Layout Presentasi",
+    ],
+    clientType: "client",
+    clientName: "Client Akademik",
+    duration: "1 hari",
+    category: "academic",
+  },
+  {
+    title: "Poster Team Variant C",
+    description:
+      "Versi poster ilustratif untuk memperkuat pemahaman fase perkembangan manusia menggunakan ikon dan warna per tahap.",
+    tech: ["Canva", "Illustration", "Visual Communication"],
+    image: "/projects/akademik/poster-team-3.jpeg",
+    github: null,
+    demo: null,
+    features: [
+      "Ilustrasi Per Tahap",
+      "Warna Kategori Usia",
+      "Kesimpulan Materi",
+    ],
+    clientType: "client",
+    clientName: "Client Akademik",
+    duration: "1 hari",
+    category: "academic",
+  },
 ];
