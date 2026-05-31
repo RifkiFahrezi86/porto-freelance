@@ -50,7 +50,7 @@ export function Navbar({
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
             onClick={() => setMenuOpen((current) => !current)}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:border-amber-200 hover:text-stone-900 md:hidden"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-stone-200 bg-white text-stone-700 shadow-sm transition hover:border-amber-200 hover:text-stone-900"
           >
             {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -58,10 +58,10 @@ export function Navbar({
       </div>
 
       {menuOpen ? (
-        <div className="border-t border-stone-200/80 px-4 pb-4 pt-3 md:hidden">
+        <div className="border-t border-stone-200/80 px-4 pb-4 pt-3 sm:px-6">
           <div className="mx-auto max-w-6xl rounded-[1.5rem] border border-stone-200 bg-white/95 p-3 shadow-[0_20px_40px_rgba(28,25,23,0.08)] backdrop-blur">
             <p className="px-2 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-stone-500">Menu cepat</p>
-            <nav className="grid gap-1">
+            <nav className="grid gap-1 md:grid-cols-2 xl:grid-cols-3">
               {links.map((link) => (
                 <a
                   key={link.href}
