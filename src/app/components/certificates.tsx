@@ -12,7 +12,19 @@ import { Certificate, SiteContent } from "./portfolio-store";
 type PdfJsModule = typeof import("pdfjs-dist");
 
 const pdfPreviewCache = new Map<string, string>();
+const pdfPreviewPending = new Map<string, Promise<string>>();
+const PDF_PREVIEW_TARGET_WIDTH = 600;
 let pdfJsPromise: Promise<PdfJsModule> | null = null;
+let pdfPreviewQueue = Promise.resolve();
+
+function enqueuePdfPreview<T>(task: () => Promise<T>) {
+  const nextTask = pdfPreviewQueue.then(task, task);
+  pdfPreviewQueue = nextTask.then(
+    () => undefined,
+    () => undefined,
+  );
+  return nextTask;
+}
 
 function installPdfJsPolyfills() {
   const installComputedInsert = (Target: typeof Map | typeof WeakMap) => {
@@ -69,51 +81,62 @@ async function renderPdfPreview(certificateUrl: string) {
     return cachedPreview;
   }
 
-  const pdfJs = await loadPdfJs();
-  const loadingTask = pdfJs.getDocument({
-    url: certificateUrl,
-    useWorkerFetch: true,
-    isEvalSupported: false,
-  });
+  const pendingPreview = pdfPreviewPending.get(certificateUrl);
+  if (pendingPreview) {
+    return pendingPreview;
+  }
 
-  const pdfDocument = await loadingTask.promise;
-
-  try {
-    const firstPage = await pdfDocument.getPage(1);
-    const baseViewport = firstPage.getViewport({ scale: 1 });
-    const targetWidth = 1200;
-    const scale = targetWidth / baseViewport.width;
-    const viewport = firstPage.getViewport({ scale });
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-
-    if (!context) {
-      throw new Error("Canvas preview tidak tersedia di browser ini.");
-    }
-
-    canvas.width = Math.ceil(viewport.width);
-    canvas.height = Math.ceil(viewport.height);
-
-    const renderTask = firstPage.render({
-      canvas,
-      canvasContext: context,
-      viewport,
+  const previewPromise = enqueuePdfPreview(async () => {
+    const pdfJs = await loadPdfJs();
+    const loadingTask = pdfJs.getDocument({
+      url: certificateUrl,
+      useWorkerFetch: true,
+      isEvalSupported: false,
     });
 
-    await renderTask.promise;
+    const pdfDocument = await loadingTask.promise;
 
-    const previewImage = canvas.toDataURL("image/jpeg", 0.92);
-    pdfPreviewCache.set(certificateUrl, previewImage);
-    return previewImage;
-  } finally {
-    if (typeof pdfDocument.cleanup === "function") {
-      pdfDocument.cleanup();
-    }
+    try {
+      const firstPage = await pdfDocument.getPage(1);
+      const baseViewport = firstPage.getViewport({ scale: 1 });
+      const scale = PDF_PREVIEW_TARGET_WIDTH / baseViewport.width;
+      const viewport = firstPage.getViewport({ scale });
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
 
-    if (typeof loadingTask.destroy === "function") {
-      await loadingTask.destroy();
+      if (!context) {
+        throw new Error("Canvas preview tidak tersedia di browser ini.");
+      }
+
+      canvas.width = Math.ceil(viewport.width);
+      canvas.height = Math.ceil(viewport.height);
+
+      const renderTask = firstPage.render({
+        canvas,
+        canvasContext: context,
+        viewport,
+      });
+
+      await renderTask.promise;
+
+      const previewImage = canvas.toDataURL("image/jpeg", 0.82);
+      pdfPreviewCache.set(certificateUrl, previewImage);
+      return previewImage;
+    } finally {
+      if (typeof pdfDocument.cleanup === "function") {
+        pdfDocument.cleanup();
+      }
+
+      if (typeof loadingTask.destroy === "function") {
+        await loadingTask.destroy();
+      }
     }
-  }
+  }).finally(() => {
+    pdfPreviewPending.delete(certificateUrl);
+  });
+
+  pdfPreviewPending.set(certificateUrl, previewPromise);
+  return previewPromise;
 }
 
 function PdfPreviewFallback({
