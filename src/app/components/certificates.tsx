@@ -27,6 +27,10 @@ function enqueuePdfPreview<T>(task: () => Promise<T>) {
 }
 
 function installPdfJsPolyfills() {
+  const preciseMath = Math as typeof Math & {
+    sumPrecise?: (values: Iterable<number>) => number;
+  };
+
   const installComputedInsert = (Target: typeof Map | typeof WeakMap) => {
     if (typeof Target !== "function" || typeof Target.prototype.getOrInsertComputed === "function") {
       return;
@@ -49,6 +53,22 @@ function installPdfJsPolyfills() {
 
   installComputedInsert(Map);
   installComputedInsert(WeakMap);
+
+  if (typeof preciseMath.sumPrecise !== "function") {
+    Object.defineProperty(preciseMath, "sumPrecise", {
+      value(values: Iterable<number>) {
+        let total = 0;
+
+        for (const value of values) {
+          total += Number(value) || 0;
+        }
+
+        return total;
+      },
+      configurable: true,
+      writable: true,
+    });
+  }
 }
 
 async function loadPdfJs() {
