@@ -14,8 +14,34 @@ type PdfJsModule = typeof import("pdfjs-dist");
 const pdfPreviewCache = new Map<string, string>();
 let pdfJsPromise: Promise<PdfJsModule> | null = null;
 
+function installPdfJsPolyfills() {
+  const installComputedInsert = (Target: typeof Map | typeof WeakMap) => {
+    if (typeof Target !== "function" || typeof Target.prototype.getOrInsertComputed === "function") {
+      return;
+    }
+
+    Object.defineProperty(Target.prototype, "getOrInsertComputed", {
+      value(key: unknown, compute: (key: unknown) => unknown) {
+        if (this.has(key)) {
+          return this.get(key);
+        }
+
+        const nextValue = compute(key);
+        this.set(key, nextValue);
+        return nextValue;
+      },
+      configurable: true,
+      writable: true,
+    });
+  };
+
+  installComputedInsert(Map);
+  installComputedInsert(WeakMap);
+}
+
 async function loadPdfJs() {
   if (!pdfJsPromise) {
+    installPdfJsPolyfills();
     pdfJsPromise = Promise.all([
       import("pdfjs-dist"),
       import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
@@ -80,7 +106,13 @@ async function renderPdfPreview(certificateUrl: string) {
     pdfPreviewCache.set(certificateUrl, previewImage);
     return previewImage;
   } finally {
-    await pdfDocument.destroy();
+    if (typeof pdfDocument.cleanup === "function") {
+      pdfDocument.cleanup();
+    }
+
+    if (typeof loadingTask.destroy === "function") {
+      await loadingTask.destroy();
+    }
   }
 }
 
@@ -253,7 +285,7 @@ export function Certificates({
               )}
               <div className="p-4 sm:p-5">
                 <div className="mb-2 flex items-center gap-2 text-[11px] text-amber-700 sm:text-xs">
-                  <Award className="w-3.5 h-3.5" /> {c.issuer} · {c.date}
+                  <Award className="w-3.5 h-3.5" /> {c.issuer} Â· {c.date}
                 </div>
                 <div className="text-sm text-stone-900 sm:text-base">{c.title}</div>
                 {c.credential ? <div className="mt-2 text-[11px] uppercase tracking-[0.18em] text-stone-500 sm:text-xs">{c.credential}</div> : null}
@@ -289,7 +321,7 @@ export function Certificates({
             )}
             {preview && (
               <div className="text-sm text-stone-600">
-                {preview.issuer} · {preview.date}
+                {preview.issuer} Â· {preview.date}
               </div>
             )}
           </DialogContent>
