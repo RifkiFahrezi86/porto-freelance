@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Award, ExternalLink, FileText } from "lucide-react";
 import {
   Dialog,
@@ -9,6 +9,25 @@ import {
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { Certificate, SiteContent } from "./portfolio-store";
 
+type PdfJsModule = typeof import("pdfjs-dist");
+
+const pdfPreviewCache = new Map<string, string>();
+let pdfJsPromise: Promise<PdfJsModule> | null = null;
+
+async function loadPdfJs() {
+  if (!pdfJsPromise) {
+    pdfJsPromise = Promise.all([
+      import("pdfjs-dist"),
+      import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
+    ]).then(([pdfJs, workerModule]) => {
+      pdfJs.GlobalWorkerOptions.workerSrc = workerModule.default;
+      return pdfJs;
+    });
+  }
+
+  return pdfJsPromise;
+}
+
 function isDocumentUrl(value: string) {
   return /\.pdf($|[?#])/i.test(value);
 }
@@ -18,26 +37,124 @@ function normalizeCertificateUrl(value?: string | null) {
   return text && text !== "#" ? text : "";
 }
 
-function buildPdfPreviewUrl(value: string) {
-  const text = normalizeCertificateUrl(value);
-
-  if (!text) {
-    return "";
+async function renderPdfPreview(certificateUrl: string) {
+  const cachedPreview = pdfPreviewCache.get(certificateUrl);
+  if (cachedPreview) {
+    return cachedPreview;
   }
 
-  const previewParams = "page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0";
-  return `${text}${text.includes("#") ? "&" : "#"}${previewParams}`;
+  const pdfJs = await loadPdfJs();
+  const loadingTask = pdfJs.getDocument({
+    url: certificateUrl,
+    useWorkerFetch: true,
+    isEvalSupported: false,
+  });
+
+  const pdfDocument = await loadingTask.promise;
+
+  try {
+    const firstPage = await pdfDocument.getPage(1);
+    const baseViewport = firstPage.getViewport({ scale: 1 });
+    const targetWidth = 1200;
+    const scale = targetWidth / baseViewport.width;
+    const viewport = firstPage.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas preview tidak tersedia di browser ini.");
+    }
+
+    canvas.width = Math.ceil(viewport.width);
+    canvas.height = Math.ceil(viewport.height);
+
+    const renderTask = firstPage.render({
+      canvas,
+      canvasContext: context,
+      viewport,
+    });
+
+    await renderTask.promise;
+
+    const previewImage = canvas.toDataURL("image/jpeg", 0.92);
+    pdfPreviewCache.set(certificateUrl, previewImage);
+    return previewImage;
+  } finally {
+    await pdfDocument.destroy();
+  }
 }
 
-function PdfPreviewFallback({ label }: { label: string }) {
+function PdfPreviewFallback({
+  label,
+  hint,
+}: {
+  label: string;
+  hint?: string;
+}) {
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 via-white to-stone-50 text-stone-700">
       <div className="px-6 text-center">
         <FileText className="mx-auto h-10 w-10 text-amber-700" />
         <div className="mt-3 text-sm font-medium">{label}</div>
+        {hint ? <div className="mt-1 text-xs text-stone-500">{hint}</div> : null}
       </div>
     </div>
   );
+}
+
+function PdfCertificatePreview({
+  certificateUrl,
+  title,
+  previewLabel,
+  imageClassName,
+}: {
+  certificateUrl: string;
+  title: string;
+  previewLabel: string;
+  imageClassName: string;
+}) {
+  const [previewImage, setPreviewImage] = useState(() => pdfPreviewCache.get(certificateUrl) || "");
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const cachedPreview = pdfPreviewCache.get(certificateUrl) || "";
+
+    setPreviewImage(cachedPreview);
+    setFailed(false);
+
+    if (cachedPreview) {
+      return;
+    }
+
+    void renderPdfPreview(certificateUrl)
+      .then((nextPreview) => {
+        if (!cancelled) {
+          setPreviewImage(nextPreview);
+        }
+      })
+      .catch((error) => {
+        console.error("Gagal merender preview PDF sertifikat:", error);
+        if (!cancelled) {
+          setFailed(true);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [certificateUrl]);
+
+  if (!previewImage) {
+    return (
+      <PdfPreviewFallback
+        label={failed ? previewLabel : "Menyiapkan cover sertifikat..."}
+        hint={failed ? "Preview PDF belum bisa dirender di browser ini." : "Halaman pertama PDF sedang dirender untuk preview."}
+      />
+    );
+  }
+
+  return <img src={previewImage} alt={title} className={imageClassName} />;
 }
 
 function CertificateMedia({
@@ -58,14 +175,12 @@ function CertificateMedia({
         onClick={onOpen}
         className="relative block aspect-[4/3] w-full overflow-hidden bg-white text-left"
       >
-        <object
-          data={buildPdfPreviewUrl(certificateUrl)}
-          type="application/pdf"
-          aria-label={`Preview ${title}`}
-          className="pointer-events-none h-full w-full bg-white"
-        >
-          <PdfPreviewFallback label={previewLabel} />
-        </object>
+        <PdfCertificatePreview
+          certificateUrl={certificateUrl}
+          title={title}
+          previewLabel={previewLabel}
+          imageClassName="h-full w-full object-cover object-top"
+        />
         <div className="pointer-events-none absolute inset-x-3 bottom-3 flex">
           <span className="rounded-full border border-stone-200/80 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-700 shadow-sm backdrop-blur">
             PDF Preview
@@ -161,14 +276,12 @@ export function Certificates({
             {preview && (
               <div className="rounded-xl overflow-hidden bg-stone-100">
                 {isDocumentUrl(normalizeCertificateUrl(preview.image)) ? (
-                  <object
-                    data={buildPdfPreviewUrl(normalizeCertificateUrl(preview.image))}
-                    type="application/pdf"
-                    aria-label={`Preview ${preview.title}`}
-                    className="h-[75vh] w-full bg-white"
-                  >
-                    <PdfPreviewFallback label={siteContent.certificates.previewLabel} />
-                  </object>
+                  <PdfCertificatePreview
+                    certificateUrl={normalizeCertificateUrl(preview.image)}
+                    title={preview.title}
+                    previewLabel={siteContent.certificates.previewLabel}
+                    imageClassName="h-auto w-full object-cover object-top"
+                  />
                 ) : (
                   <ImageWithFallback src={normalizeCertificateUrl(preview.image)} alt={preview.title} className="w-full h-auto" />
                 )}
