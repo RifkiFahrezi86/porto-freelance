@@ -18,6 +18,78 @@ function normalizeCertificateUrl(value?: string | null) {
   return text && text !== "#" ? text : "";
 }
 
+function buildPdfPreviewUrl(value: string) {
+  const text = normalizeCertificateUrl(value);
+
+  if (!text) {
+    return "";
+  }
+
+  const previewParams = "page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0";
+  return `${text}${text.includes("#") ? "&" : "#"}${previewParams}`;
+}
+
+function PdfPreviewFallback({ label }: { label: string }) {
+  return (
+    <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-stone-100 via-white to-stone-50 text-stone-700">
+      <div className="px-6 text-center">
+        <FileText className="mx-auto h-10 w-10 text-amber-700" />
+        <div className="mt-3 text-sm font-medium">{label}</div>
+      </div>
+    </div>
+  );
+}
+
+function CertificateMedia({
+  certificateUrl,
+  title,
+  previewLabel,
+  onOpen,
+}: {
+  certificateUrl: string;
+  title: string;
+  previewLabel: string;
+  onOpen: () => void;
+}) {
+  if (isDocumentUrl(certificateUrl)) {
+    return (
+      <button
+        type="button"
+        onClick={onOpen}
+        className="relative block aspect-[4/3] w-full overflow-hidden bg-white text-left"
+      >
+        <object
+          data={buildPdfPreviewUrl(certificateUrl)}
+          type="application/pdf"
+          aria-label={`Preview ${title}`}
+          className="pointer-events-none h-full w-full bg-white"
+        >
+          <PdfPreviewFallback label={previewLabel} />
+        </object>
+        <div className="pointer-events-none absolute inset-x-3 bottom-3 flex">
+          <span className="rounded-full border border-stone-200/80 bg-white/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-700 shadow-sm backdrop-blur">
+            PDF Preview
+          </span>
+        </div>
+      </button>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="block w-full aspect-[4/3] overflow-hidden bg-stone-100"
+    >
+      <ImageWithFallback
+        src={certificateUrl}
+        alt={title}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      />
+    </button>
+  );
+}
+
 export function Certificates({
   items,
   siteContent,
@@ -48,29 +120,13 @@ export function Certificates({
               key={c.id}
               className="group relative overflow-hidden rounded-2xl border border-stone-200 bg-white transition hover:shadow-lg"
             >
-              {certificateUrl && !isDocumentUrl(certificateUrl) ? (
-                <button
-                  onClick={() => setPreview(c)}
-                  className="block w-full aspect-[4/3] overflow-hidden bg-stone-100"
-                >
-                  <ImageWithFallback
-                    src={certificateUrl}
-                    alt={c.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </button>
-              ) : certificateUrl ? (
-                <a
-                  href={certificateUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-stone-100 via-white to-stone-50 text-stone-700 no-underline"
-                >
-                  <div className="text-center">
-                    <FileText className="mx-auto h-10 w-10 text-amber-700" />
-                    <div className="mt-3 text-sm font-medium">{siteContent.certificates.previewLabel}</div>
-                  </div>
-                </a>
+              {certificateUrl ? (
+                <CertificateMedia
+                  certificateUrl={certificateUrl}
+                  title={c.title}
+                  previewLabel={siteContent.certificates.previewLabel}
+                  onOpen={() => setPreview(c)}
+                />
               ) : (
                 <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-stone-100 via-white to-stone-50 px-6 text-center text-stone-500">
                   <div>
@@ -104,7 +160,18 @@ export function Certificates({
             </DialogHeader>
             {preview && (
               <div className="rounded-xl overflow-hidden bg-stone-100">
-                <ImageWithFallback src={normalizeCertificateUrl(preview.image)} alt={preview.title} className="w-full h-auto" />
+                {isDocumentUrl(normalizeCertificateUrl(preview.image)) ? (
+                  <object
+                    data={buildPdfPreviewUrl(normalizeCertificateUrl(preview.image))}
+                    type="application/pdf"
+                    aria-label={`Preview ${preview.title}`}
+                    className="h-[75vh] w-full bg-white"
+                  >
+                    <PdfPreviewFallback label={siteContent.certificates.previewLabel} />
+                  </object>
+                ) : (
+                  <ImageWithFallback src={normalizeCertificateUrl(preview.image)} alt={preview.title} className="w-full h-auto" />
+                )}
               </div>
             )}
             {preview && (

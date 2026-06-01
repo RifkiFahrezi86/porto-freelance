@@ -108,6 +108,42 @@ function readFileAsBase64(file) {
   })
 }
 
+function isManagedPortfolioAsset(value) {
+  const text = String(value || '').trim()
+
+  if (!text) {
+    return false
+  }
+
+  if (text.startsWith('portfolio/')) {
+    return true
+  }
+
+  try {
+    const url = new URL(text)
+    return url.hostname.endsWith('.blob.vercel-storage.com') && url.pathname.startsWith('/portfolio/')
+  } catch {
+    return false
+  }
+}
+
+function portfolioPayloadReferencesAsset(payload, assetUrl) {
+  const target = String(assetUrl || '').trim()
+
+  if (!target) {
+    return false
+  }
+
+  const assetCandidates = [
+    payload?.profile?.image,
+    ...(Array.isArray(payload?.projects) ? payload.projects.map((project) => project?.image) : []),
+    ...(Array.isArray(payload?.certificates) ? payload.certificates.map((certificate) => certificate?.image) : []),
+    ...(Array.isArray(payload?.techStack) ? payload.techStack.map((tech) => tech?.icon) : []),
+  ]
+
+  return assetCandidates.some((value) => String(value || '').trim() === target)
+}
+
 function hydrateProfile(profile = {}) {
   const social = profile.social && typeof profile.social === 'object' ? profile.social : {}
   const seed = portfolioSeed.profile || {}
@@ -836,7 +872,31 @@ export default function PortfolioAdminApp() {
     touch()
   }
 
-  async function uploadAssetFile({ file, folder, filenameHint, requestKey, onSuccess, successText }) {
+  async function deleteMediaAsset(assetValue) {
+    const target = String(assetValue || '').trim()
+
+    if (!authToken.trim() || !isManagedPortfolioAsset(target)) {
+      return false
+    }
+
+    const response = await fetch('/api/portfolio/media', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-token': authToken.trim(),
+      },
+      body: JSON.stringify(target.startsWith('portfolio/') ? { pathname: target } : { url: target }),
+    })
+
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok) {
+      throw new Error(payload.error || 'Gagal menghapus file lama dari Vercel Blob.')
+    }
+
+    return true
+  }
+
+  async function uploadAssetFile({ file, folder, filenameHint, currentAssetUrl = '', requestKey, onSuccess, successText }) {
     if (!authToken.trim()) {
       setNotice({ tone: 'error', text: 'Login admin diperlukan sebelum mengupload file ke Vercel Blob.' })
       return
@@ -873,11 +933,31 @@ export default function PortfolioAdminApp() {
       }
 
       const nextState = onSuccess?.(payload.url) || {}
-      await persistPortfolio(nextState, {
+      const nextPayload = buildPortfolioPayload(nextState)
+      const saved = await persistPortfolio(nextState, {
         successText: `${successText} File langsung tersimpan dan portfolio ikut diperbarui.`,
         errorText: 'File berhasil diupload ke Vercel Blob, tetapi data portfolio belum tersimpan. Anda masih bisa klik Simpan semua untuk mencoba lagi.',
         clearNotice: false,
       })
+
+      const previousAssetUrl = String(currentAssetUrl || '').trim()
+      const shouldDeletePreviousAsset =
+        saved &&
+        isManagedPortfolioAsset(previousAssetUrl) &&
+        previousAssetUrl !== payload.url &&
+        !portfolioPayloadReferencesAsset(nextPayload, previousAssetUrl)
+
+      if (shouldDeletePreviousAsset) {
+        try {
+          await deleteMediaAsset(previousAssetUrl)
+        } catch (cleanupError) {
+          console.error(cleanupError)
+          setNotice({
+            tone: 'error',
+            text: 'File baru sudah tersimpan, tetapi file lama belum berhasil dihapus otomatis dari Vercel Blob.',
+          })
+        }
+      }
     } catch (error) {
       console.error(error)
       setNotice({ tone: 'error', text: error instanceof Error ? error.message : 'Gagal mengupload file ke Blob.' })
@@ -891,6 +971,7 @@ export default function PortfolioAdminApp() {
       file,
       folder: 'profile',
       filenameHint: profile.name || 'profile-image',
+      currentAssetUrl: profile.image,
       requestKey: 'profile-image',
       onSuccess: (url) => {
         const nextProfile = { ...profile, image: url }
@@ -909,6 +990,7 @@ export default function PortfolioAdminApp() {
       file,
       folder: 'projects',
       filenameHint: project?.filenameHint || project?.title || 'project-image',
+      currentAssetUrl: project?.image,
       requestKey: `project-${index}`,
       onSuccess: (url) => {
         const nextProjects = projects.map((item, currentIndex) => currentIndex === index ? { ...item, image: url, sourceAssetUrl: '' } : item)
@@ -927,6 +1009,7 @@ export default function PortfolioAdminApp() {
       file,
       folder: 'certificates',
       filenameHint: certificate?.filenameHint || certificate?.title || 'certificate-file',
+      currentAssetUrl: certificate?.image,
       requestKey: `certificate-${index}`,
       onSuccess: (url) => {
         const nextCertificates = certificates.map((item, currentIndex) => currentIndex === index ? { ...item, image: url, sourceAssetUrl: '' } : item)
@@ -945,6 +1028,7 @@ export default function PortfolioAdminApp() {
       file,
       folder: 'tech-stack',
       filenameHint: tech?.filenameHint || tech?.name || 'tech-logo',
+      currentAssetUrl: tech?.icon,
       requestKey: `tech-${index}`,
       onSuccess: (url) => {
         const nextTechStack = techStack.map((item, currentIndex) => currentIndex === index ? { ...item, icon: url } : item)
